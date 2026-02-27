@@ -70,7 +70,7 @@ export function MobileSidebar({
                 <X size={20} />
               </button>
             </div>
-            <div className="flex-1 overflow-hidden [&>aside]:border-r-0">
+            <div className="flex-1 overflow-hidden [&>aside]:border-r-0 [&>aside]:w-full">
               <Sidebar
                 categories={categories}
                 filter={filter}
