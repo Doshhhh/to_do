@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useSupabase } from "@/components/providers/SupabaseProvider";
 import type { Category, Subcategory } from "@/lib/types";
 import { DEFAULT_CATEGORIES } from "@/lib/types";
@@ -9,6 +9,7 @@ export function useCategories() {
   const supabase = useSupabase();
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
+  const seedingRef = useRef(false);
 
   const fetchCategories = useCallback(async () => {
     const { data: cats, error } = await supabase
@@ -18,6 +19,7 @@ export function useCategories() {
 
     if (error) {
       console.error("Error fetching categories:", error);
+      setLoading(false);
       return;
     }
 
@@ -29,11 +31,17 @@ export function useCategories() {
         ),
       }));
       setCategories(sorted);
+      setLoading(false);
     } else {
-      await seedDefaultCategories();
-    }
+      if (seedingRef.current) return;
+      seedingRef.current = true;
 
-    setLoading(false);
+      try {
+        await seedDefaultCategories();
+      } finally {
+        seedingRef.current = false;
+      }
+    }
   }, [supabase]);
 
   const seedDefaultCategories = async () => {
@@ -41,6 +49,17 @@ export function useCategories() {
       data: { user },
     } = await supabase.auth.getUser();
     if (!user) return;
+
+    // Double-check: categories may have been created by a concurrent call
+    const { data: existing } = await supabase
+      .from("categories")
+      .select("id")
+      .limit(1);
+
+    if (existing && existing.length > 0) {
+      await fetchCategories();
+      return;
+    }
 
     for (const cat of DEFAULT_CATEGORIES) {
       const { data: newCat } = await supabase

@@ -13,6 +13,8 @@ interface SidebarProps {
   filter: CategoryFilter;
   onFilterChange: (filter: CategoryFilter) => void;
   todoCounts: Record<string, number>;
+  expanded?: Record<string, boolean>;
+  onExpandChange?: (expanded: Record<string, boolean>) => void;
 }
 
 export function Sidebar({
@@ -20,12 +22,17 @@ export function Sidebar({
   filter,
   onFilterChange,
   todoCounts,
+  expanded: externalExpanded,
+  onExpandChange,
 }: SidebarProps) {
   const { isDark } = useTheme();
-  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+  const [internalExpanded, setInternalExpanded] = useState<Record<string, boolean>>({});
+
+  const expanded = externalExpanded ?? internalExpanded;
+  const setExpanded = onExpandChange ?? setInternalExpanded;
 
   const toggleExpand = (id: string) => {
-    setExpanded((prev) => ({ ...prev, [id]: !prev[id] }));
+    setExpanded({ ...expanded, [id]: !expanded[id] });
   };
 
   const isAllSelected = !filter.categoryId && !filter.subcategoryId;
@@ -92,10 +99,10 @@ export function Sidebar({
                       categoryId: cat.id,
                       subcategoryId: null,
                     });
-                    if (hasSubs) toggleExpand(cat.id);
                   }}
                   className={cn(
                     "flex-1 flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium cursor-pointer",
+                    hasSubs ? "rounded-r-none" : "",
                     isSelected
                       ? "bg-[var(--accent)]/10"
                       : "hover:bg-[var(--separator)]"
@@ -117,17 +124,27 @@ export function Sidebar({
                       {todoCounts[cat.id]}
                     </span>
                   )}
-                  {hasSubs && (
+                </button>
+                {hasSubs && (
+                  <button
+                    onClick={() => toggleExpand(cat.id)}
+                    className={cn(
+                      "flex items-center justify-center px-2 py-2.5 rounded-r-lg cursor-pointer",
+                      isSelected
+                        ? "bg-[var(--accent)]/10"
+                        : "hover:bg-[var(--separator)]"
+                    )}
+                  >
                     <ChevronDown
                       size={14}
                       className={cn(
-                        "transition-transform ml-auto",
+                        "transition-transform",
                         isExpanded && "rotate-180"
                       )}
                       style={{ color: "var(--text-secondary)" }}
                     />
-                  )}
-                </button>
+                  </button>
+                )}
               </div>
 
               {/* Subcategories */}

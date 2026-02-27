@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
 import { Sidebar } from "./Sidebar";
@@ -22,6 +23,8 @@ export function MobileSidebar({
   onFilterChange,
   todoCounts,
 }: MobileSidebarProps) {
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+
   const handleFilterChange = (f: CategoryFilter) => {
     onFilterChange(f);
     onClose();
@@ -68,6 +71,8 @@ export function MobileSidebar({
               filter={filter}
               onFilterChange={handleFilterChange}
               todoCounts={todoCounts}
+              expanded={expanded}
+              onExpandChange={setExpanded}
             />
           </motion.div>
         </>
