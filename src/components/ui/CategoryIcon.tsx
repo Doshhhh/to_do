@@ -10,6 +10,8 @@ import {
   Youtube,
   MoreHorizontal,
   Languages,
+  Palette,
+  Music,
   type LucideProps,
 } from "lucide-react";
 
@@ -23,6 +25,8 @@ const iconMap: Record<string, React.ComponentType<LucideProps>> = {
   Youtube,
   MoreHorizontal,
   Languages,
+  Palette,
+  Music,
 };
 
 interface CategoryIconProps extends LucideProps {

@@ -76,11 +76,23 @@ export const DEFAULT_CATEGORIES = [
     ],
   },
   {
+    name: "Хобби",
+    icon: "Palette",
+    color_light: "#9B7653",
+    color_dark: "#B08D6A",
+    sort_order: 2,
+    subcategories: [
+      { name: "Программирование", icon: "Code", sort_order: 0 },
+      { name: "Музыка", icon: "Music", sort_order: 1 },
+      { name: "Другое", icon: "MoreHorizontal", sort_order: 2 },
+    ],
+  },
+  {
     name: "Личное",
     icon: "User",
     color_light: "#8B6F5C",
     color_dark: "#A68B78",
-    sort_order: 2,
+    sort_order: 3,
     subcategories: [],
   },
   {
@@ -88,7 +100,7 @@ export const DEFAULT_CATEGORIES = [
     icon: "ShoppingCart",
     color_light: "#B07D4B",
     color_dark: "#C9945E",
-    sort_order: 3,
+    sort_order: 4,
     subcategories: [],
   },
   {
@@ -96,7 +108,7 @@ export const DEFAULT_CATEGORIES = [
     icon: "Heart",
     color_light: "#6B8F71",
     color_dark: "#7FA886",
-    sort_order: 4,
+    sort_order: 5,
     subcategories: [],
   },
 ] as const;
