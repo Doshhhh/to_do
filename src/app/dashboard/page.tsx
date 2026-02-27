@@ -5,6 +5,7 @@ import { Header } from "@/components/layout/Header";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { MobileSidebar } from "@/components/layout/MobileSidebar";
 import { TodoList } from "@/components/todos/TodoList";
+import { CalendarView } from "@/components/calendar/CalendarView";
 import { useCategories } from "@/hooks/useCategories";
 import { useTodos } from "@/hooks/useTodos";
 import { useSupabase } from "@/components/providers/SupabaseProvider";
@@ -17,6 +18,7 @@ export default function DashboardPage() {
     display_name: string | null;
   }>({ avatar_url: null, display_name: null });
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [calendarView, setCalendarView] = useState(false);
 
   const { categories, loading: catsLoading } = useCategories();
   const {
@@ -33,6 +35,7 @@ export default function DashboardPage() {
     deleteTodo,
     reorderTodos,
     todos,
+    allTodos,
   } = useTodos();
 
   useEffect(() => {
@@ -126,8 +129,13 @@ export default function DashboardPage() {
           <Sidebar
             categories={categories}
             filter={filter}
-            onFilterChange={setFilter}
+            onFilterChange={(f) => {
+              setFilter(f);
+              setCalendarView(false);
+            }}
             todoCounts={todoCounts}
+            calendarActive={calendarView}
+            onCalendarToggle={() => setCalendarView((v) => !v)}
           />
         </div>
 
@@ -137,24 +145,40 @@ export default function DashboardPage() {
           onClose={() => setSidebarOpen(false)}
           categories={categories}
           filter={filter}
-          onFilterChange={setFilter}
+          onFilterChange={(f) => {
+            setFilter(f);
+            setCalendarView(false);
+          }}
           todoCounts={todoCounts}
+          calendarActive={calendarView}
+          onCalendarToggle={() => setCalendarView((v) => !v)}
         />
 
         {/* Main content */}
-        <TodoList
-          activeTodos={activeTodos}
-          completedTodos={completedTodos}
-          categories={categories}
-          filter={filter}
-          sortBy={sortBy}
-          onSortChange={setSortBy}
-          onAdd={handleAdd}
-          onToggle={toggleTodo}
-          onDelete={deleteTodo}
-          onUpdate={handleUpdate}
-          onReorder={reorderTodos}
-        />
+        {calendarView ? (
+          <CalendarView
+            todos={allTodos}
+            categories={categories}
+            onAdd={handleAdd}
+            onUpdate={handleUpdate}
+            onToggle={toggleTodo}
+            onDelete={deleteTodo}
+          />
+        ) : (
+          <TodoList
+            activeTodos={activeTodos}
+            completedTodos={completedTodos}
+            categories={categories}
+            filter={filter}
+            sortBy={sortBy}
+            onSortChange={setSortBy}
+            onAdd={handleAdd}
+            onToggle={toggleTodo}
+            onDelete={deleteTodo}
+            onUpdate={handleUpdate}
+            onReorder={reorderTodos}
+          />
+        )}
       </div>
     </div>
   );

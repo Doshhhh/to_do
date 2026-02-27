@@ -8,6 +8,7 @@ import { sortTodos } from "@/lib/utils";
 export function useTodos() {
   const supabase = useSupabase();
   const [todos, setTodos] = useState<Todo[]>([]);
+  const [allTodos, setAllTodos] = useState<Todo[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<CategoryFilter>({
     categoryId: null,
@@ -16,23 +17,27 @@ export function useTodos() {
   const [sortBy, setSortBy] = useState<SortOption>("created_at");
 
   const fetchTodos = useCallback(async () => {
-    let query = supabase
+    // Always fetch all todos for calendar
+    const allQuery = supabase
       .from("todos")
       .select("*")
       .order("sort_order", { ascending: true });
 
-    if (filter.subcategoryId) {
-      query = query.eq("subcategory_id", filter.subcategoryId);
-    } else if (filter.categoryId) {
-      query = query.eq("category_id", filter.categoryId);
-    }
+    const { data: allData, error: allError } = await allQuery;
 
-    const { data, error } = await query;
-
-    if (error) {
-      console.error("Error fetching todos:", error);
+    if (allError) {
+      console.error("Error fetching todos:", allError);
     } else {
-      setTodos(data || []);
+      setAllTodos(allData || []);
+
+      // Apply filter for the list view
+      if (filter.subcategoryId) {
+        setTodos(allData?.filter((t: Todo) => t.subcategory_id === filter.subcategoryId) || []);
+      } else if (filter.categoryId) {
+        setTodos(allData?.filter((t: Todo) => t.category_id === filter.categoryId) || []);
+      } else {
+        setTodos(allData || []);
+      }
     }
     setLoading(false);
   }, [supabase, filter]);
@@ -74,6 +79,7 @@ export function useTodos() {
     }
 
     setTodos((prev) => [...prev, data]);
+    setAllTodos((prev) => [...prev, data]);
     return data;
   };
 
@@ -89,6 +95,9 @@ export function useTodos() {
     }
 
     setTodos((prev) =>
+      prev.map((t) => (t.id === id ? { ...t, ...updates } : t))
+    );
+    setAllTodos((prev) =>
       prev.map((t) => (t.id === id ? { ...t, ...updates } : t))
     );
   };
@@ -114,6 +123,7 @@ export function useTodos() {
     }
 
     setTodos((prev) => prev.filter((t) => t.id !== id));
+    setAllTodos((prev) => prev.filter((t) => t.id !== id));
   };
 
   const reorderTodos = async (activeId: string, overId: string) => {
@@ -146,6 +156,7 @@ export function useTodos() {
 
   return {
     todos,
+    allTodos,
     activeTodos,
     completedTodos,
     loading,

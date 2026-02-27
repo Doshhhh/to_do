@@ -13,6 +13,8 @@ interface MobileSidebarProps {
   filter: CategoryFilter;
   onFilterChange: (filter: CategoryFilter) => void;
   todoCounts: Record<string, number>;
+  calendarActive?: boolean;
+  onCalendarToggle?: () => void;
 }
 
 export function MobileSidebar({
@@ -22,6 +24,8 @@ export function MobileSidebar({
   filter,
   onFilterChange,
   todoCounts,
+  calendarActive,
+  onCalendarToggle,
 }: MobileSidebarProps) {
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
 
@@ -73,6 +77,11 @@ export function MobileSidebar({
               todoCounts={todoCounts}
               expanded={expanded}
               onExpandChange={setExpanded}
+              calendarActive={calendarActive}
+              onCalendarToggle={() => {
+                onCalendarToggle?.();
+                onClose();
+              }}
             />
           </motion.div>
         </>

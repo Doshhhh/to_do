@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ListTodo, ChevronDown } from "lucide-react";
+import { ListTodo, ChevronDown, Calendar } from "lucide-react";
 import { CategoryIcon } from "@/components/ui/CategoryIcon";
 import type { Category, CategoryFilter } from "@/lib/types";
 import { useTheme } from "@/components/providers/ThemeProvider";
@@ -15,6 +15,8 @@ interface SidebarProps {
   todoCounts: Record<string, number>;
   expanded?: Record<string, boolean>;
   onExpandChange?: (expanded: Record<string, boolean>) => void;
+  calendarActive?: boolean;
+  onCalendarToggle?: () => void;
 }
 
 export function Sidebar({
@@ -24,6 +26,8 @@ export function Sidebar({
   todoCounts,
   expanded: externalExpanded,
   onExpandChange,
+  calendarActive,
+  onCalendarToggle,
 }: SidebarProps) {
   const { isDark } = useTheme();
   const [internalExpanded, setInternalExpanded] = useState<Record<string, boolean>>({});
@@ -39,13 +43,13 @@ export function Sidebar({
 
   return (
     <aside
-      className="w-[250px] lg:w-[250px] md:w-[200px] h-full border-r overflow-y-auto flex-shrink-0"
+      className="w-[250px] lg:w-[250px] md:w-[200px] h-full border-r overflow-y-auto flex-shrink-0 flex flex-col"
       style={{
         backgroundColor: "var(--bg-sidebar)",
         borderColor: "var(--separator)",
       }}
     >
-      <nav className="p-3 space-y-1">
+      <nav className="p-3 space-y-1 flex-1">
         {/* All tasks */}
         <button
           onClick={() =>
@@ -208,6 +212,30 @@ export function Sidebar({
           );
         })}
       </nav>
+
+      {/* Calendar button */}
+      {onCalendarToggle && (
+        <div
+          className="p-3 border-t"
+          style={{ borderColor: "var(--separator)" }}
+        >
+          <button
+            onClick={onCalendarToggle}
+            className={cn(
+              "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium cursor-pointer",
+              calendarActive
+                ? "bg-[var(--accent)]/10"
+                : "hover:bg-[var(--separator)]"
+            )}
+            style={{
+              color: calendarActive ? "var(--accent)" : "var(--text-primary)",
+            }}
+          >
+            <Calendar size={18} />
+            <span>Календарь</span>
+          </button>
+        </div>
+      )}
     </aside>
   );
 }
