@@ -50,7 +50,7 @@ export function MobileSidebar({
             animate={{ x: 0 }}
             exit={{ x: "-100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="fixed left-0 top-0 bottom-0 z-50 w-[280px] md:hidden"
+            className="fixed left-0 top-0 bottom-0 z-50 w-[280px] md:hidden flex flex-col"
             style={{ backgroundColor: "var(--bg-sidebar)" }}
           >
             <div className="flex items-center justify-between p-3 border-b"
@@ -70,19 +70,21 @@ export function MobileSidebar({
                 <X size={20} />
               </button>
             </div>
-            <Sidebar
-              categories={categories}
-              filter={filter}
-              onFilterChange={handleFilterChange}
-              todoCounts={todoCounts}
-              expanded={expanded}
-              onExpandChange={setExpanded}
-              calendarActive={calendarActive}
-              onCalendarToggle={() => {
-                onCalendarToggle?.();
-                onClose();
-              }}
-            />
+            <div className="flex-1 overflow-hidden">
+              <Sidebar
+                categories={categories}
+                filter={filter}
+                onFilterChange={handleFilterChange}
+                todoCounts={todoCounts}
+                expanded={expanded}
+                onExpandChange={setExpanded}
+                calendarActive={calendarActive}
+                onCalendarToggle={() => {
+                  onCalendarToggle?.();
+                  onClose();
+                }}
+              />
+            </div>
           </motion.div>
         </>
       )}

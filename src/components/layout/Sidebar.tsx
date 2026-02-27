@@ -43,13 +43,13 @@ export function Sidebar({
 
   return (
     <aside
-      className="w-[250px] lg:w-[250px] md:w-[200px] h-full border-r overflow-y-auto flex-shrink-0 flex flex-col"
+      className="w-[250px] lg:w-[250px] md:w-[200px] h-full border-r flex-shrink-0 flex flex-col overflow-hidden"
       style={{
         backgroundColor: "var(--bg-sidebar)",
         borderColor: "var(--separator)",
       }}
     >
-      <nav className="p-3 space-y-1 flex-1">
+      <nav className="p-3 space-y-1 flex-1 overflow-y-auto">
         {/* All tasks */}
         <button
           onClick={() =>

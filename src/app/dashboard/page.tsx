@@ -125,7 +125,7 @@ export default function DashboardPage() {
 
       <div className="flex flex-1 overflow-hidden">
         {/* Desktop sidebar */}
-        <div className="hidden md:block">
+        <div className="hidden md:block h-[calc(100vh-3.5rem)] sticky top-14">
           <Sidebar
             categories={categories}
             filter={filter}
