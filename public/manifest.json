@@ -1,0 +1,25 @@
+{
+  "name": "Todo App",
+  "short_name": "Todo",
+  "description": "Управляйте задачами эффективно",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FAF9F6",
+  "theme_color": "#D97706",
+  "orientation": "portrait-primary",
+  "lang": "ru",
+  "icons": [
+    {
+      "src": "/icons/icon-any.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-maskable.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}
