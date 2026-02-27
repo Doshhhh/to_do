@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
 import { DatePicker } from "@/components/ui/DatePicker";
@@ -46,6 +46,14 @@ export function TodoForm({
     initialData?.priority || "medium"
   );
   const [deadline, setDeadline] = useState(initialData?.deadline || "");
+
+  // Sync category/subcategory from active filter when form opens for creation
+  useEffect(() => {
+    if (isOpen && !initialData) {
+      setCategoryId(defaultCategoryId || "");
+      setSubcategoryId(defaultSubcategoryId || "");
+    }
+  }, [isOpen, defaultCategoryId, defaultSubcategoryId, initialData]);
 
   const selectedCategory = categories.find((c) => c.id === categoryId);
   const subcategories = selectedCategory?.subcategories || [];
