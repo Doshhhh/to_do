@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight, Calendar, X } from "lucide-react";
 
@@ -44,17 +45,64 @@ export function DatePicker({ value, onChange }: DatePickerProps) {
     return new Date().getMonth();
   });
 
-  const containerRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLDivElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const [isMobile, setIsMobile] = useState(false);
+  const [dropdownPos, setDropdownPos] = useState<{
+    top: number;
+    left: number;
+    dropUp: boolean;
+  }>({ top: 0, left: 0, dropUp: false });
 
   const today = new Date();
   const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+
+  // Compute position when open
+  const updatePosition = useCallback(() => {
+    if (!triggerRef.current) return;
+
+    const mobile = window.innerWidth < 640;
+    setIsMobile(mobile);
+
+    if (mobile) return; // Modal mode, no positioning needed
+
+    const rect = triggerRef.current.getBoundingClientRect();
+    const dropdownWidth = Math.min(280, window.innerWidth - 32);
+    const spaceBelow = window.innerHeight - rect.bottom;
+    const dropUp = spaceBelow < 360;
+
+    let left = rect.left + rect.width / 2 - dropdownWidth / 2;
+    // Clamp to viewport with 16px padding
+    left = Math.max(16, Math.min(left, window.innerWidth - dropdownWidth - 16));
+
+    const top = dropUp
+      ? rect.top + window.scrollY - 6
+      : rect.bottom + window.scrollY + 6;
+
+    setDropdownPos({ top, left, dropUp });
+  }, []);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    updatePosition();
+    window.addEventListener("resize", updatePosition);
+    window.addEventListener("scroll", updatePosition, true);
+    return () => {
+      window.removeEventListener("resize", updatePosition);
+      window.removeEventListener("scroll", updatePosition, true);
+    };
+  }, [isOpen, updatePosition]);
 
   // Close on outside click
   useEffect(() => {
     if (!isOpen) return;
     function handleClick(e: MouseEvent) {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+      const target = e.target as Node;
+      if (
+        triggerRef.current && !triggerRef.current.contains(target) &&
+        dropdownRef.current && !dropdownRef.current.contains(target)
+      ) {
         setIsOpen(false);
       }
     }
@@ -70,15 +118,6 @@ export function DatePicker({ value, onChange }: DatePickerProps) {
     }
     document.addEventListener("keydown", handleKey);
     return () => document.removeEventListener("keydown", handleKey);
-  }, [isOpen]);
-
-  // Position dropdown above if not enough space below
-  const [dropUp, setDropUp] = useState(false);
-  useEffect(() => {
-    if (!isOpen || !containerRef.current) return;
-    const rect = containerRef.current.getBoundingClientRect();
-    const spaceBelow = window.innerHeight - rect.bottom;
-    setDropUp(spaceBelow < 360);
   }, [isOpen]);
 
   const open = useCallback(() => {
@@ -160,8 +199,298 @@ export function DatePicker({ value, onChange }: DatePickerProps) {
   const lastRowAllNext = dayGrid.slice(lastRowStart).every((d) => !d.current);
   const finalGrid = lastRowAllNext ? dayGrid.slice(0, lastRowStart) : dayGrid;
 
+  // Calendar content (shared between desktop dropdown and mobile modal)
+  const calendarContent = (
+    <AnimatePresence mode="wait">
+      {view === "months" ? (
+        <motion.div
+          key="months"
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -20 }}
+          transition={{ duration: 0.15 }}
+          className="p-3"
+        >
+          {/* Year header */}
+          <div className="flex items-center justify-between mb-3">
+            <button
+              type="button"
+              onClick={() => setViewYear((y) => y - 1)}
+              className="p-1.5 rounded-lg transition-colors hover:bg-[var(--separator)]"
+            >
+              <ChevronLeft size={16} style={{ color: "var(--text-secondary)" }} />
+            </button>
+            <span
+              className="text-sm font-semibold"
+              style={{ color: "var(--text-primary)" }}
+            >
+              {viewYear}
+            </span>
+            <button
+              type="button"
+              onClick={() => setViewYear((y) => y + 1)}
+              className="p-1.5 rounded-lg transition-colors hover:bg-[var(--separator)]"
+            >
+              <ChevronRight size={16} style={{ color: "var(--text-secondary)" }} />
+            </button>
+          </div>
+
+          {/* Month grid */}
+          <div className="grid grid-cols-3 gap-1.5">
+            {MONTHS_SHORT.map((m, i) => {
+              const isCurrentMonth = viewYear === today.getFullYear() && i === today.getMonth();
+              const isSelected = value && viewYear === new Date(value).getFullYear() && i === new Date(value).getMonth();
+              return (
+                <button
+                  key={m}
+                  type="button"
+                  onClick={() => {
+                    setViewMonth(i);
+                    setView("days");
+                  }}
+                  className="py-2 px-1 rounded-lg text-sm transition-colors"
+                  style={{
+                    backgroundColor: isSelected
+                      ? "var(--accent)"
+                      : "transparent",
+                    color: isSelected
+                      ? "#fff"
+                      : isCurrentMonth
+                        ? "var(--accent)"
+                        : "var(--text-primary)",
+                    fontWeight: isCurrentMonth || isSelected ? 600 : 400,
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isSelected) e.currentTarget.style.backgroundColor = "var(--separator)";
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isSelected) e.currentTarget.style.backgroundColor = "transparent";
+                  }}
+                >
+                  {m}
+                </button>
+              );
+            })}
+          </div>
+        </motion.div>
+      ) : (
+        <motion.div
+          key="days"
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: 20 }}
+          transition={{ duration: 0.15 }}
+          className="p-3"
+        >
+          {/* Month/Year header */}
+          <div className="flex items-center justify-between mb-2">
+            <button
+              type="button"
+              onClick={() => {
+                if (viewMonth === 0) {
+                  setViewMonth(11);
+                  setViewYear((y) => y - 1);
+                } else {
+                  setViewMonth((m) => m - 1);
+                }
+              }}
+              className="p-1.5 rounded-lg transition-colors hover:bg-[var(--separator)]"
+            >
+              <ChevronLeft size={16} style={{ color: "var(--text-secondary)" }} />
+            </button>
+            <button
+              type="button"
+              onClick={() => setView("months")}
+              className="text-sm font-semibold px-2 py-1 rounded-lg transition-colors hover:bg-[var(--separator)]"
+              style={{ color: "var(--text-primary)" }}
+            >
+              {MONTHS[viewMonth]} {viewYear}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                if (viewMonth === 11) {
+                  setViewMonth(0);
+                  setViewYear((y) => y + 1);
+                } else {
+                  setViewMonth((m) => m + 1);
+                }
+              }}
+              className="p-1.5 rounded-lg transition-colors hover:bg-[var(--separator)]"
+            >
+              <ChevronRight size={16} style={{ color: "var(--text-secondary)" }} />
+            </button>
+          </div>
+
+          {/* Weekday headers */}
+          <div className="grid grid-cols-7 mb-1">
+            {WEEKDAYS.map((wd) => (
+              <div
+                key={wd}
+                className="text-center text-xs py-1"
+                style={{ color: "var(--text-secondary)" }}
+              >
+                {wd}
+              </div>
+            ))}
+          </div>
+
+          {/* Day grid */}
+          <div className="grid grid-cols-7">
+            {finalGrid.map((cell, i) => {
+              const isToday = cell.dateStr === todayStr;
+              const isSelected = cell.dateStr === value;
+              return (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => {
+                    if (cell.current) {
+                      selectDay(cell.day);
+                    } else {
+                      const [y, m, d] = cell.dateStr.split("-").map(Number);
+                      setViewYear(y);
+                      setViewMonth(m - 1);
+                      onChange(cell.dateStr);
+                      setIsOpen(false);
+                    }
+                  }}
+                  className="aspect-square flex items-center justify-center text-sm rounded-lg transition-colors"
+                  style={{
+                    backgroundColor: isSelected
+                      ? "var(--accent)"
+                      : "transparent",
+                    color: isSelected
+                      ? "#fff"
+                      : !cell.current
+                        ? "var(--text-secondary)"
+                        : isToday
+                          ? "var(--accent)"
+                          : "var(--text-primary)",
+                    fontWeight: isToday || isSelected ? 600 : 400,
+                    opacity: !cell.current ? 0.5 : 1,
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isSelected) e.currentTarget.style.backgroundColor = "var(--separator)";
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isSelected) e.currentTarget.style.backgroundColor = "transparent";
+                  }}
+                >
+                  {cell.day}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Today shortcut */}
+          <div className="mt-2 pt-2 border-t" style={{ borderColor: "var(--separator)" }}>
+            <button
+              type="button"
+              onClick={() => {
+                onChange(todayStr);
+                setIsOpen(false);
+              }}
+              className="w-full text-sm py-1.5 rounded-lg transition-colors"
+              style={{ color: "var(--accent)" }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = "var(--separator)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = "transparent";
+              }}
+            >
+              Сегодня
+            </button>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+
+  // Portal dropdown rendered into document.body
+  const portalDropdown = isOpen
+    ? createPortal(
+        <AnimatePresence>
+          {isOpen && (
+            <>
+              {/* Mobile overlay */}
+              {isMobile && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.15 }}
+                  onClick={() => setIsOpen(false)}
+                  style={{
+                    position: "fixed",
+                    inset: 0,
+                    backgroundColor: "rgba(0,0,0,0.4)",
+                    zIndex: 9998,
+                  }}
+                />
+              )}
+
+              <motion.div
+                ref={dropdownRef}
+                initial={
+                  isMobile
+                    ? { opacity: 0, scale: 0.95 }
+                    : { opacity: 0, scale: 0.95, y: dropdownPos.dropUp ? 8 : -8 }
+                }
+                animate={
+                  isMobile
+                    ? { opacity: 1, scale: 1 }
+                    : { opacity: 1, scale: 1, y: 0 }
+                }
+                exit={
+                  isMobile
+                    ? { opacity: 0, scale: 0.95 }
+                    : { opacity: 0, scale: 0.95, y: dropdownPos.dropUp ? 8 : -8 }
+                }
+                transition={{ duration: 0.15 }}
+                className="rounded-xl border overflow-hidden"
+                style={
+                  isMobile
+                    ? {
+                        position: "fixed",
+                        top: "50%",
+                        left: "50%",
+                        transform: "translate(-50%, -50%)",
+                        zIndex: 9999,
+                        width: `${Math.min(280, window.innerWidth - 32)}px`,
+                        maxWidth: "calc(100vw - 32px)",
+                        backgroundColor: "var(--bg-card)",
+                        borderColor: "var(--separator)",
+                        boxShadow: "0 12px 32px rgba(0,0,0,0.15)",
+                      }
+                    : {
+                        position: "absolute",
+                        top: dropdownPos.dropUp ? undefined : `${dropdownPos.top}px`,
+                        bottom: dropdownPos.dropUp
+                          ? `${document.documentElement.scrollHeight - dropdownPos.top}px`
+                          : undefined,
+                        left: `${dropdownPos.left}px`,
+                        zIndex: 9999,
+                        width: `${Math.min(280, window.innerWidth - 32)}px`,
+                        maxWidth: "calc(100vw - 32px)",
+                        backgroundColor: "var(--bg-card)",
+                        borderColor: "var(--separator)",
+                        boxShadow: "0 12px 32px rgba(0,0,0,0.15)",
+                      }
+                }
+              >
+                {calendarContent}
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>,
+        document.body
+      )
+    : null;
+
   return (
-    <div ref={containerRef} className="relative">
+    <div ref={triggerRef}>
       {/* Trigger field */}
       <div
         onClick={open}
@@ -187,235 +516,7 @@ export function DatePicker({ value, onChange }: DatePickerProps) {
         )}
       </div>
 
-      {/* Dropdown */}
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            ref={dropdownRef}
-            initial={{ opacity: 0, scale: 0.95, y: dropUp ? 8 : -8 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: dropUp ? 8 : -8 }}
-            transition={{ duration: 0.15 }}
-            className="absolute z-50 rounded-xl border overflow-hidden"
-            style={{
-              backgroundColor: "var(--bg-card)",
-              borderColor: "var(--separator)",
-              boxShadow: "0 12px 32px rgba(0,0,0,0.15)",
-              width: "280px",
-              left: "50%",
-              transform: "translateX(-50%)",
-              ...(dropUp ? { bottom: "100%", marginBottom: "6px" } : { top: "100%", marginTop: "6px" }),
-            }}
-          >
-            <AnimatePresence mode="wait">
-              {view === "months" ? (
-                <motion.div
-                  key="months"
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  transition={{ duration: 0.15 }}
-                  className="p-3"
-                >
-                  {/* Year header */}
-                  <div className="flex items-center justify-between mb-3">
-                    <button
-                      type="button"
-                      onClick={() => setViewYear((y) => y - 1)}
-                      className="p-1.5 rounded-lg transition-colors hover:bg-[var(--separator)]"
-                    >
-                      <ChevronLeft size={16} style={{ color: "var(--text-secondary)" }} />
-                    </button>
-                    <span
-                      className="text-sm font-semibold"
-                      style={{ color: "var(--text-primary)" }}
-                    >
-                      {viewYear}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => setViewYear((y) => y + 1)}
-                      className="p-1.5 rounded-lg transition-colors hover:bg-[var(--separator)]"
-                    >
-                      <ChevronRight size={16} style={{ color: "var(--text-secondary)" }} />
-                    </button>
-                  </div>
-
-                  {/* Month grid */}
-                  <div className="grid grid-cols-3 gap-1.5">
-                    {MONTHS_SHORT.map((m, i) => {
-                      const isCurrentMonth = viewYear === today.getFullYear() && i === today.getMonth();
-                      const isSelected = value && viewYear === new Date(value).getFullYear() && i === new Date(value).getMonth();
-                      return (
-                        <button
-                          key={m}
-                          type="button"
-                          onClick={() => {
-                            setViewMonth(i);
-                            setView("days");
-                          }}
-                          className="py-2 px-1 rounded-lg text-sm transition-colors"
-                          style={{
-                            backgroundColor: isSelected
-                              ? "var(--accent)"
-                              : "transparent",
-                            color: isSelected
-                              ? "#fff"
-                              : isCurrentMonth
-                                ? "var(--accent)"
-                                : "var(--text-primary)",
-                            fontWeight: isCurrentMonth || isSelected ? 600 : 400,
-                          }}
-                          onMouseEnter={(e) => {
-                            if (!isSelected) e.currentTarget.style.backgroundColor = "var(--separator)";
-                          }}
-                          onMouseLeave={(e) => {
-                            if (!isSelected) e.currentTarget.style.backgroundColor = "transparent";
-                          }}
-                        >
-                          {m}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </motion.div>
-              ) : (
-                <motion.div
-                  key="days"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 20 }}
-                  transition={{ duration: 0.15 }}
-                  className="p-3"
-                >
-                  {/* Month/Year header */}
-                  <div className="flex items-center justify-between mb-2">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (viewMonth === 0) {
-                          setViewMonth(11);
-                          setViewYear((y) => y - 1);
-                        } else {
-                          setViewMonth((m) => m - 1);
-                        }
-                      }}
-                      className="p-1.5 rounded-lg transition-colors hover:bg-[var(--separator)]"
-                    >
-                      <ChevronLeft size={16} style={{ color: "var(--text-secondary)" }} />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setView("months")}
-                      className="text-sm font-semibold px-2 py-1 rounded-lg transition-colors hover:bg-[var(--separator)]"
-                      style={{ color: "var(--text-primary)" }}
-                    >
-                      {MONTHS[viewMonth]} {viewYear}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (viewMonth === 11) {
-                          setViewMonth(0);
-                          setViewYear((y) => y + 1);
-                        } else {
-                          setViewMonth((m) => m + 1);
-                        }
-                      }}
-                      className="p-1.5 rounded-lg transition-colors hover:bg-[var(--separator)]"
-                    >
-                      <ChevronRight size={16} style={{ color: "var(--text-secondary)" }} />
-                    </button>
-                  </div>
-
-                  {/* Weekday headers */}
-                  <div className="grid grid-cols-7 mb-1">
-                    {WEEKDAYS.map((wd) => (
-                      <div
-                        key={wd}
-                        className="text-center text-xs py-1"
-                        style={{ color: "var(--text-secondary)" }}
-                      >
-                        {wd}
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Day grid */}
-                  <div className="grid grid-cols-7">
-                    {finalGrid.map((cell, i) => {
-                      const isToday = cell.dateStr === todayStr;
-                      const isSelected = cell.dateStr === value;
-                      return (
-                        <button
-                          key={i}
-                          type="button"
-                          onClick={() => {
-                            if (cell.current) {
-                              selectDay(cell.day);
-                            } else {
-                              // Navigate to that month and select
-                              const [y, m, d] = cell.dateStr.split("-").map(Number);
-                              setViewYear(y);
-                              setViewMonth(m - 1);
-                              onChange(cell.dateStr);
-                              setIsOpen(false);
-                            }
-                          }}
-                          className="aspect-square flex items-center justify-center text-sm rounded-lg transition-colors"
-                          style={{
-                            backgroundColor: isSelected
-                              ? "var(--accent)"
-                              : "transparent",
-                            color: isSelected
-                              ? "#fff"
-                              : !cell.current
-                                ? "var(--text-secondary)"
-                                : isToday
-                                  ? "var(--accent)"
-                                  : "var(--text-primary)",
-                            fontWeight: isToday || isSelected ? 600 : 400,
-                            opacity: !cell.current ? 0.5 : 1,
-                          }}
-                          onMouseEnter={(e) => {
-                            if (!isSelected) e.currentTarget.style.backgroundColor = "var(--separator)";
-                          }}
-                          onMouseLeave={(e) => {
-                            if (!isSelected) e.currentTarget.style.backgroundColor = "transparent";
-                          }}
-                        >
-                          {cell.day}
-                        </button>
-                      );
-                    })}
-                  </div>
-
-                  {/* Today shortcut */}
-                  <div className="mt-2 pt-2 border-t" style={{ borderColor: "var(--separator)" }}>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        onChange(todayStr);
-                        setIsOpen(false);
-                      }}
-                      className="w-full text-sm py-1.5 rounded-lg transition-colors"
-                      style={{ color: "var(--accent)" }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor = "var(--separator)";
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.backgroundColor = "transparent";
-                      }}
-                    >
-                      Сегодня
-                    </button>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {portalDropdown}
     </div>
   );
 }
