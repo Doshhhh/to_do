@@ -47,13 +47,23 @@ export function TodoForm({
   );
   const [deadline, setDeadline] = useState(initialData?.deadline || "");
 
-  // Sync category/subcategory from active filter when form opens for creation
+  // Sync form fields when form opens
   useEffect(() => {
-    if (isOpen && !initialData) {
-      setCategoryId(defaultCategoryId || "");
-      setSubcategoryId(defaultSubcategoryId || "");
+    if (isOpen) {
+      if (initialData) {
+        setTitle(initialData.title || "");
+        setDescription(initialData.description || "");
+        setCategoryId(initialData.category_id || defaultCategoryId || "");
+        setSubcategoryId(initialData.subcategory_id || defaultSubcategoryId || "");
+        setPriority(initialData.priority || "medium");
+        setDeadline(initialData.deadline || "");
+      } else {
+        setCategoryId(defaultCategoryId || "");
+        setSubcategoryId(defaultSubcategoryId || "");
+        setDeadline("");
+      }
     }
-  }, [isOpen, defaultCategoryId, defaultSubcategoryId, initialData]);
+  }, [isOpen, initialData, defaultCategoryId, defaultSubcategoryId]);
 
   const selectedCategory = categories.find((c) => c.id === categoryId);
   const subcategories = selectedCategory?.subcategories || [];
