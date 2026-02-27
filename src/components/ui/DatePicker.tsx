@@ -62,7 +62,7 @@ export function DatePicker({ value, onChange }: DatePickerProps) {
   const updatePosition = useCallback(() => {
     if (!triggerRef.current) return;
 
-    const mobile = window.innerWidth < 640;
+    const mobile = window.innerWidth < 768;
     setIsMobile(mobile);
 
     if (mobile) return; // Modal mode, no positioning needed
@@ -412,77 +412,70 @@ export function DatePicker({ value, onChange }: DatePickerProps) {
   const portalDropdown = isOpen
     ? createPortal(
         <AnimatePresence>
-          {isOpen && (
-            <>
-              {/* Mobile overlay */}
-              {isMobile && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.15 }}
-                  onClick={() => setIsOpen(false)}
-                  style={{
-                    position: "fixed",
-                    inset: 0,
-                    backgroundColor: "rgba(0,0,0,0.4)",
-                    zIndex: 9998,
-                  }}
-                />
-              )}
-
+          {isOpen && isMobile && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.15 }}
+              onClick={() => setIsOpen(false)}
+              style={{
+                position: "fixed",
+                inset: 0,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                backgroundColor: "rgba(0,0,0,0.4)",
+                zIndex: 9999,
+                padding: "16px",
+              }}
+            >
               <motion.div
                 ref={dropdownRef}
-                initial={
-                  isMobile
-                    ? { opacity: 0, scale: 0.95 }
-                    : { opacity: 0, scale: 0.95, y: dropdownPos.dropUp ? 8 : -8 }
-                }
-                animate={
-                  isMobile
-                    ? { opacity: 1, scale: 1 }
-                    : { opacity: 1, scale: 1, y: 0 }
-                }
-                exit={
-                  isMobile
-                    ? { opacity: 0, scale: 0.95 }
-                    : { opacity: 0, scale: 0.95, y: dropdownPos.dropUp ? 8 : -8 }
-                }
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
                 transition={{ duration: 0.15 }}
+                onClick={(e) => e.stopPropagation()}
                 className="rounded-xl border overflow-hidden"
-                style={
-                  isMobile
-                    ? {
-                        position: "fixed",
-                        top: "50%",
-                        left: "50%",
-                        transform: "translate(-50%, -50%)",
-                        zIndex: 9999,
-                        width: `${Math.min(280, window.innerWidth - 32)}px`,
-                        maxWidth: "calc(100vw - 32px)",
-                        backgroundColor: "var(--bg-card)",
-                        borderColor: "var(--separator)",
-                        boxShadow: "0 12px 32px rgba(0,0,0,0.15)",
-                      }
-                    : {
-                        position: "absolute",
-                        top: dropdownPos.dropUp ? undefined : `${dropdownPos.top}px`,
-                        bottom: dropdownPos.dropUp
-                          ? `${document.documentElement.scrollHeight - dropdownPos.top}px`
-                          : undefined,
-                        left: `${dropdownPos.left}px`,
-                        zIndex: 9999,
-                        width: `${Math.min(280, window.innerWidth - 32)}px`,
-                        maxWidth: "calc(100vw - 32px)",
-                        backgroundColor: "var(--bg-card)",
-                        borderColor: "var(--separator)",
-                        boxShadow: "0 12px 32px rgba(0,0,0,0.15)",
-                      }
-                }
+                style={{
+                  width: "280px",
+                  maxWidth: "100%",
+                  backgroundColor: "var(--bg-card)",
+                  borderColor: "var(--separator)",
+                  boxShadow: "0 12px 32px rgba(0,0,0,0.15)",
+                }}
               >
                 {calendarContent}
               </motion.div>
-            </>
+            </motion.div>
+          )}
+
+          {isOpen && !isMobile && (
+            <motion.div
+              ref={dropdownRef}
+              initial={{ opacity: 0, scale: 0.95, y: dropdownPos.dropUp ? 8 : -8 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: dropdownPos.dropUp ? 8 : -8 }}
+              transition={{ duration: 0.15 }}
+              className="rounded-xl border overflow-hidden"
+              style={{
+                position: "absolute",
+                top: dropdownPos.dropUp ? undefined : `${dropdownPos.top}px`,
+                bottom: dropdownPos.dropUp
+                  ? `${document.documentElement.scrollHeight - dropdownPos.top}px`
+                  : undefined,
+                left: `${dropdownPos.left}px`,
+                zIndex: 9999,
+                width: `${Math.min(280, window.innerWidth - 32)}px`,
+                maxWidth: "calc(100vw - 32px)",
+                backgroundColor: "var(--bg-card)",
+                borderColor: "var(--separator)",
+                boxShadow: "0 12px 32px rgba(0,0,0,0.15)",
+              }}
+            >
+              {calendarContent}
+            </motion.div>
           )}
         </AnimatePresence>,
         document.body
