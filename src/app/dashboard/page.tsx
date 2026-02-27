@@ -114,7 +114,7 @@ export default function DashboardPage() {
 
   return (
     <div
-      className="min-h-screen flex flex-col"
+      className="h-screen flex flex-col overflow-hidden"
       style={{ backgroundColor: "var(--bg-primary)" }}
     >
       <Header
@@ -123,9 +123,9 @@ export default function DashboardPage() {
         onMenuToggle={() => setSidebarOpen(true)}
       />
 
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 min-h-0">
         {/* Desktop sidebar */}
-        <div className="hidden md:block h-[calc(100vh-3.5rem)] sticky top-14">
+        <div className="hidden md:flex h-full">
           <Sidebar
             categories={categories}
             filter={filter}
