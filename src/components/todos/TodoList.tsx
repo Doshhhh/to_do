@@ -16,12 +16,12 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { AnimatePresence, motion } from "framer-motion";
-import { Plus, ClipboardList } from "lucide-react";
+import { ClipboardList } from "lucide-react";
 import { TodoItem } from "./TodoItem";
 import { TodoForm } from "./TodoForm";
 import { TodoSortControls } from "./TodoSortControls";
 import { CompletedSection } from "./CompletedSection";
-import { Button } from "@/components/ui/Button";
+import { FloatingActionButton } from "@/components/ui/FloatingActionButton";
 import type { Todo, Category, CategoryFilter, SortOption } from "@/lib/types";
 
 interface TodoListProps {
@@ -181,17 +181,8 @@ export function TodoList({
         onEdit={handleEdit}
       />
 
-      {/* Add button */}
-      <div className="mt-4">
-        <Button
-          onClick={() => setShowForm(true)}
-          variant="secondary"
-          className="w-full"
-        >
-          <Plus size={18} className="mr-2" />
-          Добавить задачу
-        </Button>
-      </div>
+      {/* FAB */}
+      <FloatingActionButton onClick={() => setShowForm(true)} />
 
       {/* Create form */}
       <TodoForm
