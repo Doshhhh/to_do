@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
 import { DatePicker } from "@/components/ui/DatePicker";
+import { useLanguage } from "@/components/providers/LanguageProvider";
+import { CATEGORY_NAME_MAP } from "@/lib/i18n";
 import type { Category, Todo } from "@/lib/types";
 
 interface TodoFormProps {
@@ -32,6 +34,7 @@ export function TodoForm({
   defaultCategoryId,
   defaultSubcategoryId,
 }: TodoFormProps) {
+  const { t } = useLanguage();
   const [title, setTitle] = useState(initialData?.title || "");
   const [description, setDescription] = useState(
     initialData?.description || ""
@@ -100,7 +103,7 @@ export function TodoForm({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={initialData ? "Редактировать задачу" : "Новая задача"}
+      title={initialData ? t("form.editTask") : t("form.newTask")}
     >
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
@@ -108,7 +111,7 @@ export function TodoForm({
             className="block text-sm mb-1"
             style={{ color: "var(--text-secondary)" }}
           >
-            Название *
+            {t("form.title")}
           </label>
           <input
             type="text"
@@ -116,7 +119,7 @@ export function TodoForm({
             onChange={(e) => setTitle(e.target.value)}
             className="w-full px-3 py-2 rounded-lg border text-sm outline-none focus:ring-2 focus:ring-[var(--accent)]/30"
             style={inputStyle}
-            placeholder="Что нужно сделать?"
+            placeholder={t("form.titlePlaceholder")}
             autoFocus
           />
         </div>
@@ -126,7 +129,7 @@ export function TodoForm({
             className="block text-sm mb-1"
             style={{ color: "var(--text-secondary)" }}
           >
-            Описание
+            {t("form.description")}
           </label>
           <textarea
             value={description}
@@ -134,7 +137,7 @@ export function TodoForm({
             className="w-full px-3 py-2 rounded-lg border text-sm outline-none resize-none focus:ring-2 focus:ring-[var(--accent)]/30"
             style={inputStyle}
             rows={3}
-            placeholder="Подробности..."
+            placeholder={t("form.descriptionPlaceholder")}
           />
         </div>
 
@@ -144,7 +147,7 @@ export function TodoForm({
               className="block text-sm mb-1"
               style={{ color: "var(--text-secondary)" }}
             >
-              Категория *
+              {t("form.category")}
             </label>
             <select
               value={categoryId}
@@ -155,10 +158,10 @@ export function TodoForm({
               className="w-full px-3 py-2 rounded-lg border text-sm outline-none cursor-pointer"
               style={inputStyle}
             >
-              <option value="">Выберите...</option>
+              <option value="">{t("form.categoryPlaceholder")}</option>
               {categories.map((cat) => (
                 <option key={cat.id} value={cat.id}>
-                  {cat.name}
+                  {CATEGORY_NAME_MAP[cat.name] ? t(CATEGORY_NAME_MAP[cat.name]) : cat.name}
                 </option>
               ))}
             </select>
@@ -169,7 +172,7 @@ export function TodoForm({
               className="block text-sm mb-1"
               style={{ color: "var(--text-secondary)" }}
             >
-              Подкатегория
+              {t("form.subcategory")}
             </label>
             <select
               value={subcategoryId}
@@ -181,7 +184,7 @@ export function TodoForm({
               <option value="">—</option>
               {subcategories.map((sub) => (
                 <option key={sub.id} value={sub.id}>
-                  {sub.name}
+                  {CATEGORY_NAME_MAP[sub.name] ? t(CATEGORY_NAME_MAP[sub.name]) : sub.name}
                 </option>
               ))}
             </select>
@@ -194,7 +197,7 @@ export function TodoForm({
               className="block text-sm mb-1"
               style={{ color: "var(--text-secondary)" }}
             >
-              Приоритет
+              {t("form.priority")}
             </label>
             <select
               value={priority}
@@ -204,9 +207,9 @@ export function TodoForm({
               className="w-full px-3 py-2 rounded-lg border text-sm outline-none cursor-pointer"
               style={inputStyle}
             >
-              <option value="high">Высокий</option>
-              <option value="medium">Средний</option>
-              <option value="low">Низкий</option>
+              <option value="high">{t("priority.high")}</option>
+              <option value="medium">{t("priority.medium")}</option>
+              <option value="low">{t("priority.low")}</option>
             </select>
           </div>
 
@@ -215,7 +218,7 @@ export function TodoForm({
               className="block text-sm mb-1"
               style={{ color: "var(--text-secondary)" }}
             >
-              Дедлайн
+              {t("form.deadline")}
             </label>
             <DatePicker value={deadline} onChange={setDeadline} />
           </div>
@@ -223,10 +226,10 @@ export function TodoForm({
 
         <div className="flex justify-end gap-3 pt-2">
           <Button type="button" variant="secondary" onClick={onClose}>
-            Отмена
+            {t("form.cancel")}
           </Button>
           <Button type="submit" disabled={!title.trim() || !categoryId}>
-            {initialData ? "Сохранить" : "Создать"}
+            {initialData ? t("form.save") : t("form.create")}
           </Button>
         </div>
       </form>

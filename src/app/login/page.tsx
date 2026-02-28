@@ -2,9 +2,11 @@
 
 import { CheckSquare } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 import { createClient } from "@/lib/supabase/client";
 
 export default function LoginPage() {
+  const { t } = useLanguage();
   const handleGoogleLogin = async () => {
     const supabase = createClient();
     await supabase.auth.signInWithOAuth({
@@ -40,13 +42,13 @@ export default function LoginPage() {
           className="text-2xl font-bold mb-2"
           style={{ color: "var(--text-primary)" }}
         >
-          Todo App
+          {t("app.title")}
         </h1>
         <p
           className="text-sm mb-8"
           style={{ color: "var(--text-secondary)" }}
         >
-          Управляйте задачами эффективно
+          {t("app.subtitle")}
         </p>
 
         <Button onClick={handleGoogleLogin} className="w-full gap-2" size="lg">
@@ -68,7 +70,7 @@ export default function LoginPage() {
               d="M8.98 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.59A8 8 0 0 0 1.83 5.4l2.67 2.07A4.77 4.77 0 0 1 8.98 3.58Z"
             />
           </svg>
-          Войти через Google
+          {t("auth.loginWithGoogle")}
         </Button>
       </div>
     </div>

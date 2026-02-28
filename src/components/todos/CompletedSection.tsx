@@ -4,6 +4,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, CheckCircle2 } from "lucide-react";
 import { TodoItem } from "./TodoItem";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 import type { Todo, Category } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -22,6 +23,7 @@ export function CompletedSection({
   onDelete,
   onEdit,
 }: CompletedSectionProps) {
+  const { t } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
 
   if (todos.length === 0) return null;
@@ -34,7 +36,7 @@ export function CompletedSection({
         style={{ color: "var(--text-secondary)" }}
       >
         <CheckCircle2 size={16} style={{ color: "var(--success)" }} />
-        <span>Выполненные ({todos.length})</span>
+        <span>{t("completed.title")} ({todos.length})</span>
         <ChevronDown
           size={14}
           className={cn(

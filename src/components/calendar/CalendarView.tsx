@@ -6,6 +6,8 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { TodoForm } from "@/components/todos/TodoForm";
 import { useTheme } from "@/components/providers/ThemeProvider";
+import { useLanguage } from "@/components/providers/LanguageProvider";
+import { MONTH_KEYS, WEEKDAY_KEYS } from "@/lib/i18n";
 import type { Todo, Category } from "@/lib/types";
 
 interface CalendarViewProps {
@@ -23,12 +25,6 @@ interface CalendarViewProps {
   onToggle: (id: string) => void;
   onDelete: (id: string) => void;
 }
-
-const WEEKDAYS = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"];
-const MONTH_NAMES = [
-  "Январь", "Февраль", "Март", "Апрель", "Май", "Июнь",
-  "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь",
-];
 
 const MAX_VISIBLE_TASKS = 2;
 
@@ -54,6 +50,7 @@ export function CalendarView({
   onDelete,
 }: CalendarViewProps) {
   const { isDark } = useTheme();
+  const { t, language } = useLanguage();
   const today = new Date();
   const [currentYear, setCurrentYear] = useState(today.getFullYear());
   const [currentMonth, setCurrentMonth] = useState(today.getMonth());
@@ -103,10 +100,10 @@ export function CalendarView({
   }, [currentYear]);
 
   const goToToday = useCallback(() => {
-    const t = new Date();
+    const t2 = new Date();
     setDirection(0);
-    setCurrentYear(t.getFullYear());
-    setCurrentMonth(t.getMonth());
+    setCurrentYear(t2.getFullYear());
+    setCurrentMonth(t2.getMonth());
   }, []);
 
   const handleDayClick = useCallback((dateKey: string) => {
@@ -232,7 +229,7 @@ export function CalendarView({
             className="text-lg font-semibold min-w-[200px] text-center"
             style={{ color: "var(--text-primary)" }}
           >
-            {MONTH_NAMES[currentMonth]} {currentYear}
+            {t(MONTH_KEYS[currentMonth])} {currentYear}
           </h1>
           <button
             onClick={() => navigateMonth(1)}
@@ -243,19 +240,19 @@ export function CalendarView({
           </button>
         </div>
         <Button variant="secondary" onClick={goToToday}>
-          Сегодня
+          {t("calendar.today")}
         </Button>
       </div>
 
       {/* Weekday headers */}
       <div className="grid grid-cols-7 mb-1">
-        {WEEKDAYS.map((day) => (
+        {WEEKDAY_KEYS.map((key) => (
           <div
-            key={day}
+            key={key}
             className="text-center text-xs font-medium py-2"
             style={{ color: "var(--text-secondary)" }}
           >
-            {day}
+            {t(key)}
           </div>
         ))}
       </div>
@@ -365,7 +362,7 @@ export function CalendarView({
                                 handleMobileDayClick(cell.dateKey);
                               }}
                             >
-                              +{dayTodos.length - MAX_VISIBLE_TASKS} ещё
+                              +{dayTodos.length - MAX_VISIBLE_TASKS} {t("calendar.more")}
                             </div>
                           )}
                         </div>
@@ -424,7 +421,7 @@ export function CalendarView({
                 className="text-sm font-medium"
                 style={{ color: "var(--text-primary)" }}
               >
-                {new Date(mobileDayPopup + "T00:00:00").toLocaleDateString("ru-RU", {
+                {new Date(mobileDayPopup + "T00:00:00").toLocaleDateString(language === "en" ? "en-US" : "ru-RU", {
                   day: "numeric",
                   month: "long",
                 })}
@@ -440,7 +437,7 @@ export function CalendarView({
                   backgroundColor: "var(--accent)" + "15",
                 }}
               >
-                + Задача
+                {t("calendar.addTask")}
               </button>
             </div>
             <div className="space-y-1.5">

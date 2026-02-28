@@ -2,6 +2,8 @@
 
 import { ArrowUpDown } from "lucide-react";
 import type { SortOption } from "@/lib/types";
+import { useLanguage } from "@/components/providers/LanguageProvider";
+import type { TranslationKey } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 interface TodoSortControlsProps {
@@ -9,13 +11,14 @@ interface TodoSortControlsProps {
   onChange: (sort: SortOption) => void;
 }
 
-const options: { value: SortOption; label: string }[] = [
-  { value: "created_at", label: "По дате" },
-  { value: "priority", label: "По приоритету" },
-  { value: "deadline", label: "По дедлайну" },
+const options: { value: SortOption; labelKey: TranslationKey }[] = [
+  { value: "created_at", labelKey: "sort.byDate" },
+  { value: "priority", labelKey: "sort.byPriority" },
+  { value: "deadline", labelKey: "sort.byDeadline" },
 ];
 
 export function TodoSortControls({ sortBy, onChange }: TodoSortControlsProps) {
+  const { t } = useLanguage();
   return (
     <div className="flex items-center gap-2">
       <ArrowUpDown
@@ -40,7 +43,7 @@ export function TodoSortControls({ sortBy, onChange }: TodoSortControlsProps) {
                   : "var(--text-secondary)",
             }}
           >
-            {opt.label}
+            {t(opt.labelKey)}
           </button>
         ))}
       </div>

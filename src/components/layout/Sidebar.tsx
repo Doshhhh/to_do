@@ -6,6 +6,8 @@ import { ListTodo, ChevronDown, Calendar } from "lucide-react";
 import { CategoryIcon } from "@/components/ui/CategoryIcon";
 import type { Category, CategoryFilter } from "@/lib/types";
 import { useTheme } from "@/components/providers/ThemeProvider";
+import { useLanguage } from "@/components/providers/LanguageProvider";
+import { CATEGORY_NAME_MAP } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 interface SidebarProps {
@@ -30,6 +32,7 @@ export function Sidebar({
   onCalendarToggle,
 }: SidebarProps) {
   const { isDark } = useTheme();
+  const { t } = useLanguage();
   const [internalExpanded, setInternalExpanded] = useState<Record<string, boolean>>({});
 
   const expanded = externalExpanded ?? internalExpanded;
@@ -66,7 +69,7 @@ export function Sidebar({
           }}
         >
           <ListTodo size={18} />
-          <span>Все задачи</span>
+          <span>{t("sidebar.allTasks")}</span>
           {todoCounts["all"] > 0 && (
             <span
               className="ml-auto text-xs px-2 py-0.5 rounded-full"
@@ -116,7 +119,7 @@ export function Sidebar({
                   }}
                 >
                   <CategoryIcon name={cat.icon} size={18} style={{ color }} />
-                  <span>{cat.name}</span>
+                  <span>{CATEGORY_NAME_MAP[cat.name] ? t(CATEGORY_NAME_MAP[cat.name]) : cat.name}</span>
                   {todoCounts[cat.id] > 0 && (
                     <span
                       className="ml-auto text-xs px-2 py-0.5 rounded-full"
@@ -189,7 +192,7 @@ export function Sidebar({
                             }}
                           >
                             <CategoryIcon name={sub.icon} size={14} />
-                            <span>{sub.name}</span>
+                            <span>{CATEGORY_NAME_MAP[sub.name] ? t(CATEGORY_NAME_MAP[sub.name]) : sub.name}</span>
                             {todoCounts[sub.id] > 0 && (
                               <span
                                 className="ml-auto text-xs px-1.5 py-0.5 rounded-full"
@@ -232,7 +235,7 @@ export function Sidebar({
             }}
           >
             <Calendar size={18} />
-            <span>Календарь</span>
+            <span>{t("sidebar.calendar")}</span>
           </button>
         </div>
       )}

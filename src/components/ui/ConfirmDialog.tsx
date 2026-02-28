@@ -2,6 +2,7 @@
 
 import { Modal } from "./Modal";
 import { Button } from "./Button";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 
 interface ConfirmDialogProps {
   isOpen: boolean;
@@ -18,6 +19,8 @@ export function ConfirmDialog({
   title,
   message,
 }: ConfirmDialogProps) {
+  const { t } = useLanguage();
+
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={title}>
       <p className="mb-6" style={{ color: "var(--text-secondary)" }}>
@@ -25,7 +28,7 @@ export function ConfirmDialog({
       </p>
       <div className="flex justify-end gap-3">
         <Button variant="secondary" onClick={onClose}>
-          Отмена
+          {t("confirm.cancel")}
         </Button>
         <Button
           variant="danger"
@@ -34,7 +37,7 @@ export function ConfirmDialog({
             onClose();
           }}
         >
-          Удалить
+          {t("confirm.delete")}
         </Button>
       </div>
     </Modal>

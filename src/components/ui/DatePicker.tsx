@@ -4,25 +4,13 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight, Calendar, X } from "lucide-react";
+import { useLanguage } from "@/components/providers/LanguageProvider";
+import { MONTH_KEYS, MONTH_SHORT_KEYS, WEEKDAY_KEYS } from "@/lib/i18n";
 
 interface DatePickerProps {
   value: string;
   onChange: (value: string) => void;
 }
-
-const MONTHS = [
-  "Январь", "Февраль", "Март", "Апрель",
-  "Май", "Июнь", "Июль", "Август",
-  "Сентябрь", "Октябрь", "Ноябрь", "Декабрь",
-];
-
-const MONTHS_SHORT = [
-  "Янв", "Фев", "Мар", "Апр",
-  "Май", "Июн", "Июл", "Авг",
-  "Сен", "Окт", "Ноя", "Дек",
-];
-
-const WEEKDAYS = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"];
 
 function getDaysInMonth(year: number, month: number) {
   return new Date(year, month + 1, 0).getDate();
@@ -34,6 +22,7 @@ function getFirstDayOfMonth(year: number, month: number) {
 }
 
 export function DatePicker({ value, onChange }: DatePickerProps) {
+  const { t, language } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
   const [view, setView] = useState<"months" | "days">("months");
   const [viewYear, setViewYear] = useState(() => {
@@ -146,7 +135,7 @@ export function DatePicker({ value, onChange }: DatePickerProps) {
   };
 
   const displayValue = value
-    ? new Date(value).toLocaleDateString("ru-RU", {
+    ? new Date(value).toLocaleDateString(language === "en" ? "en-US" : "ru-RU", {
         day: "numeric",
         month: "long",
         year: "numeric",
@@ -237,7 +226,8 @@ export function DatePicker({ value, onChange }: DatePickerProps) {
 
           {/* Month grid */}
           <div className="grid grid-cols-3 gap-1.5">
-            {MONTHS_SHORT.map((m, i) => {
+            {MONTH_SHORT_KEYS.map((key, i) => {
+              const m = t(key);
               const isCurrentMonth = viewYear === today.getFullYear() && i === today.getMonth();
               const isSelected = value && viewYear === new Date(value).getFullYear() && i === new Date(value).getMonth();
               return (
@@ -304,7 +294,7 @@ export function DatePicker({ value, onChange }: DatePickerProps) {
               className="text-sm font-semibold px-2 py-1 rounded-lg transition-colors hover:bg-[var(--separator)]"
               style={{ color: "var(--text-primary)" }}
             >
-              {MONTHS[viewMonth]} {viewYear}
+              {t(MONTH_KEYS[viewMonth])} {viewYear}
             </button>
             <button
               type="button"
@@ -324,13 +314,13 @@ export function DatePicker({ value, onChange }: DatePickerProps) {
 
           {/* Weekday headers */}
           <div className="grid grid-cols-7 mb-1">
-            {WEEKDAYS.map((wd) => (
+            {WEEKDAY_KEYS.map((key) => (
               <div
-                key={wd}
+                key={key}
                 className="text-center text-xs py-1"
                 style={{ color: "var(--text-secondary)" }}
               >
-                {wd}
+                {t(key)}
               </div>
             ))}
           </div>
@@ -400,7 +390,7 @@ export function DatePicker({ value, onChange }: DatePickerProps) {
                 e.currentTarget.style.backgroundColor = "transparent";
               }}
             >
-              Сегодня
+              {t("calendar.today")}
             </button>
           </div>
         </motion.div>
@@ -496,7 +486,7 @@ export function DatePicker({ value, onChange }: DatePickerProps) {
       >
         <Calendar size={16} style={{ color: "var(--text-secondary)", flexShrink: 0 }} />
         <span className="flex-1 truncate">
-          {displayValue || "Выберите дату"}
+          {displayValue || t("calendar.selectDate")}
         </span>
         {value && (
           <button

@@ -2,20 +2,23 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { Menu, LogOut, CheckSquare } from "lucide-react";
-import { ThemeToggle } from "@/components/ui/ThemeToggle";
+import { Menu, CheckSquare } from "lucide-react";
+import { UserDropdown } from "./UserDropdown";
 import { useSupabase } from "@/components/providers/SupabaseProvider";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 import { useRouter } from "next/navigation";
 
 interface HeaderProps {
   avatarUrl: string | null;
   displayName: string | null;
+  email: string | null;
   onMenuToggle: () => void;
 }
 
-export function Header({ avatarUrl, displayName, onMenuToggle }: HeaderProps) {
+export function Header({ avatarUrl, displayName, email, onMenuToggle }: HeaderProps) {
   const supabase = useSupabase();
   const router = useRouter();
+  const { t } = useLanguage();
   const [showMenu, setShowMenu] = useState(false);
 
   const handleLogout = async () => {
@@ -45,13 +48,12 @@ export function Header({ avatarUrl, displayName, onMenuToggle }: HeaderProps) {
             className="font-semibold text-lg hidden sm:inline"
             style={{ color: "var(--text-primary)" }}
           >
-            Todo App
+            {t("app.title")}
           </span>
         </div>
       </div>
 
       <div className="flex items-center gap-2">
-        <ThemeToggle />
         <div className="relative">
           <button
             onClick={() => setShowMenu(!showMenu)}
@@ -78,39 +80,14 @@ export function Header({ avatarUrl, displayName, onMenuToggle }: HeaderProps) {
             )}
           </button>
 
-          {showMenu && (
-            <>
-              <div
-                className="fixed inset-0 z-40"
-                onClick={() => setShowMenu(false)}
-              />
-              <div
-                className="absolute right-0 top-full mt-1 z-50 w-48 rounded-lg shadow-lg border py-1"
-                style={{
-                  backgroundColor: "var(--bg-card)",
-                  borderColor: "var(--separator)",
-                }}
-              >
-                <div
-                  className="px-3 py-2 text-sm border-b"
-                  style={{
-                    color: "var(--text-secondary)",
-                    borderColor: "var(--separator)",
-                  }}
-                >
-                  {displayName || "Пользователь"}
-                </div>
-                <button
-                  onClick={handleLogout}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-[var(--separator)] cursor-pointer"
-                  style={{ color: "var(--text-primary)" }}
-                >
-                  <LogOut size={16} />
-                  Выйти
-                </button>
-              </div>
-            </>
-          )}
+          <UserDropdown
+            isOpen={showMenu}
+            onClose={() => setShowMenu(false)}
+            avatarUrl={avatarUrl}
+            displayName={displayName}
+            email={email}
+            onLogout={handleLogout}
+          />
         </div>
       </div>
     </header>

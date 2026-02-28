@@ -16,7 +16,8 @@ export default function DashboardPage() {
   const [user, setUser] = useState<{
     avatar_url: string | null;
     display_name: string | null;
-  }>({ avatar_url: null, display_name: null });
+    email: string | null;
+  }>({ avatar_url: null, display_name: null, email: null });
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [calendarView, setCalendarView] = useState(false);
 
@@ -50,6 +51,7 @@ export default function DashboardPage() {
             authUser.user_metadata.full_name ||
             authUser.user_metadata.name ||
             null,
+          email: authUser.email || null,
         });
       }
     };
@@ -120,6 +122,7 @@ export default function DashboardPage() {
       <Header
         avatarUrl={user.avatar_url}
         displayName={user.display_name}
+        email={user.email}
         onMenuToggle={() => setSidebarOpen(true)}
       />
 

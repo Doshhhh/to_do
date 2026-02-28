@@ -4,6 +4,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
 import { Sidebar } from "./Sidebar";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 import type { Category, CategoryFilter } from "@/lib/types";
 
 interface MobileSidebarProps {
@@ -27,6 +28,7 @@ export function MobileSidebar({
   calendarActive,
   onCalendarToggle,
 }: MobileSidebarProps) {
+  const { t } = useLanguage();
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
 
   const handleFilterChange = (f: CategoryFilter) => {
@@ -60,7 +62,7 @@ export function MobileSidebar({
                 className="font-semibold"
                 style={{ color: "var(--text-primary)" }}
               >
-                Категории
+                {t("sidebar.categories")}
               </span>
               <button
                 onClick={onClose}

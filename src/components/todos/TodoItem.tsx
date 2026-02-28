@@ -10,6 +10,7 @@ import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import type { Todo, Category } from "@/lib/types";
 import { cn, isOverdue, formatDate } from "@/lib/utils";
 import { useTheme } from "@/components/providers/ThemeProvider";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 
 interface TodoItemProps {
   todo: Todo;
@@ -27,6 +28,7 @@ export function TodoItem({
   onEdit,
 }: TodoItemProps) {
   const { isDark } = useTheme();
+  const { t, language } = useLanguage();
   const [showDelete, setShowDelete] = useState(false);
   const overdue = isOverdue(todo);
 
@@ -170,7 +172,7 @@ export function TodoItem({
                   }}
                 >
                   <Calendar size={12} />
-                  {formatDate(todo.deadline)}
+                  {formatDate(todo.deadline, language === "en" ? "en-US" : "ru-RU")}
                 </span>
               )}
             </div>
@@ -194,8 +196,8 @@ export function TodoItem({
         isOpen={showDelete}
         onClose={() => setShowDelete(false)}
         onConfirm={() => onDelete(todo.id)}
-        title="Удалить задачу?"
-        message={`Задача "${todo.title}" будет удалена навсегда.`}
+        title={t("confirm.deleteTask")}
+        message={`"${todo.title}" ${t("confirm.deleteMessage")}`}
       />
     </>
   );

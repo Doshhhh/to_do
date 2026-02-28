@@ -22,6 +22,8 @@ import { TodoForm } from "./TodoForm";
 import { TodoSortControls } from "./TodoSortControls";
 import { CompletedSection } from "./CompletedSection";
 import { FloatingActionButton } from "@/components/ui/FloatingActionButton";
+import { useLanguage } from "@/components/providers/LanguageProvider";
+import { CATEGORY_NAME_MAP } from "@/lib/i18n";
 import type { Todo, Category, CategoryFilter, SortOption } from "@/lib/types";
 
 interface TodoListProps {
@@ -58,6 +60,7 @@ export function TodoList({
   onUpdate,
   onReorder,
 }: TodoListProps) {
+  const { t } = useLanguage();
   const [showForm, setShowForm] = useState(false);
   const [editingTodo, setEditingTodo] = useState<Todo | null>(null);
 
@@ -114,9 +117,9 @@ export function TodoList({
         >
           {currentCategory
             ? currentSubcategory
-              ? `${currentCategory.name} > ${currentSubcategory.name}`
-              : currentCategory.name
-            : "Все задачи"}
+              ? `${CATEGORY_NAME_MAP[currentCategory.name] ? t(CATEGORY_NAME_MAP[currentCategory.name]) : currentCategory.name} > ${CATEGORY_NAME_MAP[currentSubcategory.name] ? t(CATEGORY_NAME_MAP[currentSubcategory.name]) : currentSubcategory.name}`
+              : CATEGORY_NAME_MAP[currentCategory.name] ? t(CATEGORY_NAME_MAP[currentCategory.name]) : currentCategory.name
+            : t("sidebar.allTasks")}
         </h1>
         <TodoSortControls sortBy={sortBy} onChange={onSortChange} />
       </div>
@@ -141,7 +144,7 @@ export function TodoList({
             className="mt-4 text-sm"
             style={{ color: "var(--text-secondary)" }}
           >
-            Нет задач. Создайте первую!
+            {t("empty.noTasks")}
           </p>
         </motion.div>
       ) : (

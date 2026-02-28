@@ -9,8 +9,8 @@ export function isOverdue(todo: Todo): boolean {
   return new Date(todo.deadline) < new Date(new Date().toDateString());
 }
 
-export function formatDate(date: string): string {
-  return new Date(date).toLocaleDateString("ru-RU", {
+export function formatDate(date: string, locale: string = "ru-RU"): string {
+  return new Date(date).toLocaleDateString(locale, {
     day: "numeric",
     month: "short",
   });

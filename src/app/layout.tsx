@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
+import { LanguageProvider } from "@/components/providers/LanguageProvider";
 import { SupabaseProvider } from "@/components/providers/SupabaseProvider";
 import { ServiceWorkerRegistrar } from "@/components/providers/ServiceWorkerRegistrar";
 import "./globals.css";
@@ -36,7 +37,9 @@ export default function RootLayout({
     <html lang="ru" suppressHydrationWarning>
       <body>
         <SupabaseProvider>
-          <ThemeProvider>{children}</ThemeProvider>
+          <ThemeProvider>
+            <LanguageProvider>{children}</LanguageProvider>
+          </ThemeProvider>
         </SupabaseProvider>
         <ServiceWorkerRegistrar />
       </body>
