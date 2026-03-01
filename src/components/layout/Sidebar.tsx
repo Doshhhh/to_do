@@ -103,7 +103,14 @@ export function Sidebar({
 
           return (
             <div key={cat.id}>
-              <div className="flex items-center">
+              <div
+                className={cn(
+                  "flex items-center rounded-lg cursor-pointer",
+                  isSelected
+                    ? "bg-[var(--accent)]/10"
+                    : "hover:bg-[var(--separator)]"
+                )}
+              >
                 <button
                   onClick={() => {
                     onFilterChange({
@@ -111,13 +118,7 @@ export function Sidebar({
                       subcategoryId: null,
                     });
                   }}
-                  className={cn(
-                    "flex-1 flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium cursor-pointer",
-                    hasSubs ? "rounded-r-none" : "",
-                    isSelected
-                      ? "bg-[var(--accent)]/10"
-                      : "hover:bg-[var(--separator)]"
-                  )}
+                  className="flex-1 flex items-center gap-3 px-3 py-2.5 text-sm font-medium cursor-pointer"
                   style={{
                     color: isSelected ? color : "var(--text-primary)",
                   }}
@@ -138,13 +139,11 @@ export function Sidebar({
                 </button>
                 {hasSubs && (
                   <button
-                    onClick={() => toggleExpand(cat.id)}
-                    className={cn(
-                      "flex items-center justify-center px-2 py-2.5 rounded-r-lg cursor-pointer",
-                      isSelected
-                        ? "bg-[var(--accent)]/10"
-                        : "hover:bg-[var(--separator)]"
-                    )}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleExpand(cat.id);
+                    }}
+                    className="flex items-center justify-center px-2 py-2.5 cursor-pointer"
                   >
                     <ChevronDown
                       size={14}
