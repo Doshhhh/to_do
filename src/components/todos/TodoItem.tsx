@@ -130,22 +130,22 @@ export function TodoItem({
             className="flex-1 min-w-0"
             onClick={() => onEdit(todo)}
           >
-            <div className="flex items-center gap-2 flex-wrap">
-              <span
-                className={cn(
-                  "text-sm font-medium",
-                  todo.is_completed && "line-through opacity-60"
-                )}
-                style={{ color: "var(--text-primary)" }}
-              >
-                {todo.title}
-              </span>
+            <div className="flex items-center gap-2">
               {categoryColor && (
                 <span
                   className="w-2 h-2 rounded-full flex-shrink-0"
                   style={{ backgroundColor: categoryColor }}
                 />
               )}
+              <span
+                className={cn(
+                  "text-sm font-medium min-w-0 truncate",
+                  todo.is_completed && "line-through opacity-60"
+                )}
+                style={{ color: "var(--text-primary)" }}
+              >
+                {todo.title}
+              </span>
             </div>
 
             {todo.description && (
