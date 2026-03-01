@@ -10,6 +10,7 @@ export function useCategories() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const seedingRef = useRef(false);
+  const hasFetchedRef = useRef(false);
 
   const fetchCategories = useCallback(async () => {
     const { data: cats, error } = await supabase
@@ -50,10 +51,10 @@ export function useCategories() {
     } = await supabase.auth.getUser();
     if (!user) return;
 
-    // Double-check: categories may have been created by a concurrent call
     const { data: existing } = await supabase
       .from("categories")
       .select("id")
+      .eq("user_id", user.id)
       .limit(1);
 
     if (existing && existing.length > 0) {
@@ -92,6 +93,8 @@ export function useCategories() {
   };
 
   useEffect(() => {
+    if (hasFetchedRef.current) return;
+    hasFetchedRef.current = true;
     fetchCategories();
   }, [fetchCategories]);
 
