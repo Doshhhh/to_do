@@ -65,26 +65,30 @@ export function useCategories() {
     for (const cat of DEFAULT_CATEGORIES) {
       const { data: newCat } = await supabase
         .from("categories")
-        .insert({
-          user_id: user.id,
-          name: cat.name,
-          icon: cat.icon,
-          color_light: cat.color_light,
-          color_dark: cat.color_dark,
-          sort_order: cat.sort_order,
-        })
+        .upsert(
+          {
+            user_id: user.id,
+            name: cat.name,
+            icon: cat.icon,
+            color_light: cat.color_light,
+            color_dark: cat.color_dark,
+            sort_order: cat.sort_order,
+          },
+          { onConflict: "user_id,name" }
+        )
         .select()
         .single();
 
       if (newCat && cat.subcategories.length > 0) {
-        await supabase.from("subcategories").insert(
+        await supabase.from("subcategories").upsert(
           cat.subcategories.map((sub) => ({
             category_id: newCat.id,
             user_id: user.id,
             name: sub.name,
             icon: sub.icon,
             sort_order: sub.sort_order,
-          }))
+          })),
+          { onConflict: "category_id,name" }
         );
       }
     }

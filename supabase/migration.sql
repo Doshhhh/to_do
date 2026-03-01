@@ -69,6 +69,10 @@ CREATE POLICY "Users can manage own todos"
   ON todos FOR ALL
   USING (auth.uid() = user_id);
 
+-- Unique constraints для защиты от дубликатов
+ALTER TABLE categories ADD CONSTRAINT unique_user_category UNIQUE (user_id, name);
+ALTER TABLE subcategories ADD CONSTRAINT unique_user_subcategory UNIQUE (category_id, name);
+
 -- Индексы
 CREATE INDEX idx_categories_user_id ON categories(user_id);
 CREATE INDEX idx_subcategories_category_id ON subcategories(category_id);
