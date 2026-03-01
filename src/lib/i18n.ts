@@ -124,6 +124,18 @@ export const translations = {
   // Settings
   "settings.title": { ru: "Настройки", en: "Settings" },
   "settings.comingSoon": { ru: "Скоро будет доступно", en: "Coming soon" },
+
+  // Statistics
+  "sidebar.stats": { ru: "Статистика", en: "Statistics" },
+  "stats.period.day": { ru: "День", en: "Day" },
+  "stats.period.week": { ru: "Неделя", en: "Week" },
+  "stats.period.month": { ru: "Месяц", en: "Month" },
+  "stats.completed": { ru: "Выполнено", en: "Completed" },
+  "stats.created": { ru: "Создано", en: "Created" },
+  "stats.completionRate": { ru: "Процент выполнения", en: "Completion rate" },
+  "stats.byCategory": { ru: "По категориям", en: "By category" },
+  "stats.tasks": { ru: "задач", en: "tasks" },
+  "stats.noData": { ru: "Нет данных за выбранный период", en: "No data for selected period" },
 } as const;
 
 export type TranslationKey = keyof typeof translations;

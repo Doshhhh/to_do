@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ListTodo, ChevronDown, Calendar } from "lucide-react";
+import { ListTodo, ChevronDown, Calendar, BarChart3 } from "lucide-react";
 import { CategoryIcon } from "@/components/ui/CategoryIcon";
 import type { Category, CategoryFilter } from "@/lib/types";
 import { useTheme } from "@/components/providers/ThemeProvider";
@@ -19,6 +19,8 @@ interface SidebarProps {
   onExpandChange?: (expanded: Record<string, boolean>) => void;
   calendarActive?: boolean;
   onCalendarToggle?: () => void;
+  statsActive?: boolean;
+  onStatsToggle?: () => void;
 }
 
 export function Sidebar({
@@ -30,6 +32,8 @@ export function Sidebar({
   onExpandChange,
   calendarActive,
   onCalendarToggle,
+  statsActive,
+  onStatsToggle,
 }: SidebarProps) {
   const { isDark } = useTheme();
   const { t } = useLanguage();
@@ -216,27 +220,46 @@ export function Sidebar({
         })}
       </nav>
 
-      {/* Calendar button */}
-      {onCalendarToggle && (
+      {/* Stats & Calendar buttons */}
+      {(onStatsToggle || onCalendarToggle) && (
         <div
-          className="p-3 border-t"
+          className="p-3 border-t space-y-1"
           style={{ borderColor: "var(--separator)" }}
         >
-          <button
-            onClick={onCalendarToggle}
-            className={cn(
-              "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium cursor-pointer",
-              calendarActive
-                ? "bg-[var(--accent)]/10"
-                : "hover:bg-[var(--separator)]"
-            )}
-            style={{
-              color: calendarActive ? "var(--accent)" : "var(--text-primary)",
-            }}
-          >
-            <Calendar size={18} />
-            <span>{t("sidebar.calendar")}</span>
-          </button>
+          {onStatsToggle && (
+            <button
+              onClick={onStatsToggle}
+              className={cn(
+                "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium cursor-pointer",
+                statsActive
+                  ? "bg-[var(--accent)]/10"
+                  : "hover:bg-[var(--separator)]"
+              )}
+              style={{
+                color: statsActive ? "var(--accent)" : "var(--text-primary)",
+              }}
+            >
+              <BarChart3 size={18} />
+              <span>{t("sidebar.stats")}</span>
+            </button>
+          )}
+          {onCalendarToggle && (
+            <button
+              onClick={onCalendarToggle}
+              className={cn(
+                "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium cursor-pointer",
+                calendarActive
+                  ? "bg-[var(--accent)]/10"
+                  : "hover:bg-[var(--separator)]"
+              )}
+              style={{
+                color: calendarActive ? "var(--accent)" : "var(--text-primary)",
+              }}
+            >
+              <Calendar size={18} />
+              <span>{t("sidebar.calendar")}</span>
+            </button>
+          )}
         </div>
       )}
     </aside>

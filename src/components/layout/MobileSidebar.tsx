@@ -16,6 +16,8 @@ interface MobileSidebarProps {
   todoCounts: Record<string, number>;
   calendarActive?: boolean;
   onCalendarToggle?: () => void;
+  statsActive?: boolean;
+  onStatsToggle?: () => void;
 }
 
 export function MobileSidebar({
@@ -27,6 +29,8 @@ export function MobileSidebar({
   todoCounts,
   calendarActive,
   onCalendarToggle,
+  statsActive,
+  onStatsToggle,
 }: MobileSidebarProps) {
   const { t } = useLanguage();
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
@@ -83,6 +87,11 @@ export function MobileSidebar({
                 calendarActive={calendarActive}
                 onCalendarToggle={() => {
                   onCalendarToggle?.();
+                  onClose();
+                }}
+                statsActive={statsActive}
+                onStatsToggle={() => {
+                  onStatsToggle?.();
                   onClose();
                 }}
               />

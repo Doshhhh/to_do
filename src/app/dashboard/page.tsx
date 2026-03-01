@@ -6,6 +6,7 @@ import { Sidebar } from "@/components/layout/Sidebar";
 import { MobileSidebar } from "@/components/layout/MobileSidebar";
 import { TodoList } from "@/components/todos/TodoList";
 import { CalendarView } from "@/components/calendar/CalendarView";
+import { StatsView } from "@/components/stats/StatsView";
 import { useCategories } from "@/hooks/useCategories";
 import { useTodos } from "@/hooks/useTodos";
 import { useSupabase } from "@/components/providers/SupabaseProvider";
@@ -20,6 +21,7 @@ export default function DashboardPage() {
   }>({ avatar_url: null, display_name: null, email: null });
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [calendarView, setCalendarView] = useState(false);
+  const [statsView, setStatsView] = useState(false);
 
   const { categories, loading: catsLoading } = useCategories();
   const {
@@ -135,10 +137,19 @@ export default function DashboardPage() {
             onFilterChange={(f) => {
               setFilter(f);
               setCalendarView(false);
+              setStatsView(false);
             }}
             todoCounts={todoCounts}
             calendarActive={calendarView}
-            onCalendarToggle={() => setCalendarView((v) => !v)}
+            onCalendarToggle={() => {
+              setCalendarView((v) => !v);
+              setStatsView(false);
+            }}
+            statsActive={statsView}
+            onStatsToggle={() => {
+              setStatsView((v) => !v);
+              setCalendarView(false);
+            }}
           />
         </div>
 
@@ -151,14 +162,25 @@ export default function DashboardPage() {
           onFilterChange={(f) => {
             setFilter(f);
             setCalendarView(false);
+            setStatsView(false);
           }}
           todoCounts={todoCounts}
           calendarActive={calendarView}
-          onCalendarToggle={() => setCalendarView((v) => !v)}
+          onCalendarToggle={() => {
+            setCalendarView((v) => !v);
+            setStatsView(false);
+          }}
+          statsActive={statsView}
+          onStatsToggle={() => {
+            setStatsView((v) => !v);
+            setCalendarView(false);
+          }}
         />
 
         {/* Main content */}
-        {calendarView ? (
+        {statsView ? (
+          <StatsView todos={allTodos} categories={categories} />
+        ) : calendarView ? (
           <CalendarView
             todos={allTodos}
             categories={categories}
