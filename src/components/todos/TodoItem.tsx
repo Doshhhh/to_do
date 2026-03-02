@@ -63,7 +63,7 @@ export function TodoItem({
         transition={{ duration: 0.2 }}
         whileHover={{ scale: 1.005 }}
         className={cn(
-          "group rounded-xl p-4 border cursor-pointer",
+          "group rounded-xl p-4 border cursor-pointer max-w-full overflow-hidden box-border",
           isDragging && "opacity-50 shadow-lg z-10",
           overdue && "ring-1 ring-red-400/50"
         )}
@@ -131,12 +131,6 @@ export function TodoItem({
             onClick={() => onEdit(todo)}
           >
             <div className="flex items-center gap-2">
-              {categoryColor && (
-                <span
-                  className="w-2 h-2 rounded-full flex-shrink-0"
-                  style={{ backgroundColor: categoryColor }}
-                />
-              )}
               <span
                 className={cn(
                   "text-sm font-medium min-w-0 truncate",
@@ -146,6 +140,12 @@ export function TodoItem({
               >
                 {todo.title}
               </span>
+              {categoryColor && (
+                <span
+                  className="w-2 h-2 rounded-full flex-shrink-0"
+                  style={{ backgroundColor: categoryColor }}
+                />
+              )}
             </div>
 
             {todo.description && (
