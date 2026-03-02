@@ -22,6 +22,7 @@ export function useHabits() {
 
     if (error) {
       console.error("Error fetching habits:", error);
+      // Table might not exist yet — don't block
     } else {
       setHabits(data || []);
     }
@@ -61,17 +62,23 @@ export function useHabits() {
     subcategory_id: string | null;
     frequency_type: "daily" | "weekly";
     frequency_count: number;
-    color?: string | null;
   }) => {
     const {
       data: { user },
     } = await supabase.auth.getUser();
-    if (!user) return null;
+    if (!user) {
+      console.error("No user found");
+      return null;
+    }
 
     const { data, error } = await supabase
       .from("habits")
       .insert({
-        ...habit,
+        name: habit.name,
+        category_id: habit.category_id,
+        subcategory_id: habit.subcategory_id,
+        frequency_type: habit.frequency_type,
+        frequency_count: habit.frequency_count,
         user_id: user.id,
         sort_order: habits.length,
       })
@@ -80,6 +87,7 @@ export function useHabits() {
 
     if (error) {
       console.error("Error adding habit:", error);
+      alert(`Error adding habit: ${error.message}`);
       return null;
     }
 

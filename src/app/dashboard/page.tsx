@@ -99,6 +99,26 @@ export default function DashboardPage() {
     return counts;
   }, [todos]);
 
+  // Count habits per category/subcategory
+  const habitCounts = useMemo(() => {
+    const counts: Record<string, number> = { all: 0 };
+    counts["all"] = allHabits.length;
+
+    for (const habit of allHabits) {
+      if (habit.category_id) {
+        counts[habit.category_id] = (counts[habit.category_id] || 0) + 1;
+      }
+      if (habit.subcategory_id) {
+        counts[habit.subcategory_id] =
+          (counts[habit.subcategory_id] || 0) + 1;
+      }
+    }
+    return counts;
+  }, [allHabits]);
+
+  // Use the right counts based on mode
+  const sidebarCounts = habitsMode ? habitCounts : todoCounts;
+
   const handleAdd = useCallback(
     async (data: {
       title: string;
@@ -285,7 +305,7 @@ export default function DashboardPage() {
               setCalendarView(false);
               setStatsView(false);
             }}
-            todoCounts={todoCounts}
+            todoCounts={sidebarCounts}
             calendarActive={calendarView}
             onCalendarToggle={() => {
               setCalendarView((v) => !v);
@@ -312,7 +332,7 @@ export default function DashboardPage() {
             setCalendarView(false);
             setStatsView(false);
           }}
-          todoCounts={todoCounts}
+          todoCounts={sidebarCounts}
           calendarActive={calendarView}
           onCalendarToggle={() => {
             setCalendarView((v) => !v);
