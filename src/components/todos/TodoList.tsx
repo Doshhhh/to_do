@@ -108,7 +108,7 @@ export function TodoList({
       : null;
 
   return (
-    <div className="flex-1 overflow-y-auto p-4 md:p-6">
+    <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-6 max-w-full box-border">
       {/* Breadcrumb */}
       <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
         <h1
@@ -157,7 +157,7 @@ export function TodoList({
             items={activeTodos.map((t) => t.id)}
             strategy={verticalListSortingStrategy}
           >
-            <div className="space-y-2">
+            <div className="space-y-2 overflow-x-hidden max-w-full">
               <AnimatePresence mode="popLayout">
                 {activeTodos.map((todo) => (
                   <TodoItem

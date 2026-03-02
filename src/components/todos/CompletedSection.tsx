@@ -55,7 +55,7 @@ export function CompletedSection({
             transition={{ duration: 0.2 }}
             className="overflow-hidden"
           >
-            <div className="space-y-2 mt-2 opacity-70">
+            <div className="space-y-2 mt-2 opacity-70 overflow-x-hidden max-w-full">
               {todos.map((todo) => (
                 <TodoItem
                   key={todo.id}
