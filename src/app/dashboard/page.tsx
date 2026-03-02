@@ -1,14 +1,18 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import { Header } from "@/components/layout/Header";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { MobileSidebar } from "@/components/layout/MobileSidebar";
 import { TodoList } from "@/components/todos/TodoList";
 import { CalendarView } from "@/components/calendar/CalendarView";
 import { StatsView } from "@/components/stats/StatsView";
+import { HabitsView } from "@/components/habits/HabitsView";
+import { HabitStats } from "@/components/habits/HabitStats";
 import { useCategories } from "@/hooks/useCategories";
 import { useTodos } from "@/hooks/useTodos";
+import { useHabits } from "@/hooks/useHabits";
 import { useSupabase } from "@/components/providers/SupabaseProvider";
 import type { Todo } from "@/lib/types";
 
@@ -22,14 +26,15 @@ export default function DashboardPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [calendarView, setCalendarView] = useState(false);
   const [statsView, setStatsView] = useState(false);
+  const [habitsMode, setHabitsMode] = useState(false);
 
   const { categories, loading: catsLoading } = useCategories();
   const {
     activeTodos,
     completedTodos,
     loading: todosLoading,
-    filter,
-    setFilter,
+    filter: todoFilter,
+    setFilter: setTodoFilter,
     sortBy,
     setSortBy,
     addTodo,
@@ -40,6 +45,22 @@ export default function DashboardPage() {
     todos,
     allTodos,
   } = useTodos();
+
+  const {
+    filteredHabits,
+    habits: allHabits,
+    completions,
+    loading: habitsLoading,
+    filter: habitFilter,
+    setFilter: setHabitFilter,
+    addHabit,
+    deleteHabit,
+    toggleCompletion,
+  } = useHabits();
+
+  // Unified filter — when in habits mode use habitFilter, otherwise todoFilter
+  const filter = habitsMode ? habitFilter : todoFilter;
+  const setFilter = habitsMode ? setHabitFilter : setTodoFilter;
 
   useEffect(() => {
     const getUser = async () => {
@@ -99,7 +120,26 @@ export default function DashboardPage() {
     [updateTodo]
   );
 
-  if (catsLoading || todosLoading) {
+  const handleHabitAdd = useCallback(
+    async (data: {
+      name: string;
+      category_id: string;
+      subcategory_id: string | null;
+      frequency_type: "daily" | "weekly";
+      frequency_count: number;
+    }) => {
+      await addHabit(data);
+    },
+    [addHabit]
+  );
+
+  const handleHabitsToggle = useCallback(() => {
+    setHabitsMode((v) => !v);
+    setCalendarView(false);
+    setStatsView(false);
+  }, []);
+
+  if (catsLoading || todosLoading || habitsLoading) {
     return (
       <div
         className="min-h-screen flex items-center justify-center"
@@ -115,6 +155,112 @@ export default function DashboardPage() {
       </div>
     );
   }
+
+  // Determine which main content to show
+  const renderContent = () => {
+    if (statsView) {
+      if (habitsMode) {
+        return (
+          <motion.div
+            key="habit-stats"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="flex-1 flex"
+          >
+            <HabitStats
+              habits={allHabits}
+              completions={completions}
+              categories={categories}
+            />
+          </motion.div>
+        );
+      }
+      return (
+        <motion.div
+          key="todo-stats"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+          className="flex-1 flex"
+        >
+          <StatsView todos={allTodos} categories={categories} />
+        </motion.div>
+      );
+    }
+
+    if (calendarView && !habitsMode) {
+      return (
+        <motion.div
+          key="calendar"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+          className="flex-1 flex"
+        >
+          <CalendarView
+            todos={allTodos}
+            categories={categories}
+            onAdd={handleAdd}
+            onUpdate={handleUpdate}
+            onToggle={toggleTodo}
+            onDelete={deleteTodo}
+          />
+        </motion.div>
+      );
+    }
+
+    if (habitsMode) {
+      return (
+        <motion.div
+          key="habits"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+          className="flex-1 flex"
+        >
+          <HabitsView
+            habits={filteredHabits}
+            completions={completions}
+            categories={categories}
+            filter={habitFilter}
+            onToggle={toggleCompletion}
+            onDelete={deleteHabit}
+            onAdd={handleHabitAdd}
+          />
+        </motion.div>
+      );
+    }
+
+    return (
+      <motion.div
+        key="todos"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.2 }}
+        className="flex-1 flex"
+      >
+        <TodoList
+          activeTodos={activeTodos}
+          completedTodos={completedTodos}
+          categories={categories}
+          filter={todoFilter}
+          sortBy={sortBy}
+          onSortChange={setSortBy}
+          onAdd={handleAdd}
+          onToggle={toggleTodo}
+          onDelete={deleteTodo}
+          onUpdate={handleUpdate}
+          onReorder={reorderTodos}
+        />
+      </motion.div>
+    );
+  };
 
   return (
     <div
@@ -150,6 +296,8 @@ export default function DashboardPage() {
               setStatsView((v) => !v);
               setCalendarView(false);
             }}
+            habitsMode={habitsMode}
+            onHabitsToggle={handleHabitsToggle}
           />
         </div>
 
@@ -175,35 +323,14 @@ export default function DashboardPage() {
             setStatsView((v) => !v);
             setCalendarView(false);
           }}
+          habitsMode={habitsMode}
+          onHabitsToggle={handleHabitsToggle}
         />
 
-        {/* Main content */}
-        {statsView ? (
-          <StatsView todos={allTodos} categories={categories} />
-        ) : calendarView ? (
-          <CalendarView
-            todos={allTodos}
-            categories={categories}
-            onAdd={handleAdd}
-            onUpdate={handleUpdate}
-            onToggle={toggleTodo}
-            onDelete={deleteTodo}
-          />
-        ) : (
-          <TodoList
-            activeTodos={activeTodos}
-            completedTodos={completedTodos}
-            categories={categories}
-            filter={filter}
-            sortBy={sortBy}
-            onSortChange={setSortBy}
-            onAdd={handleAdd}
-            onToggle={toggleTodo}
-            onDelete={deleteTodo}
-            onUpdate={handleUpdate}
-            onReorder={reorderTodos}
-          />
-        )}
+        {/* Main content with crossfade */}
+        <AnimatePresence mode="wait">
+          {renderContent()}
+        </AnimatePresence>
       </div>
     </div>
   );

@@ -43,6 +43,27 @@ export interface Todo {
   updated_at: string;
 }
 
+export interface Habit {
+  id: string;
+  user_id: string;
+  category_id: string;
+  subcategory_id: string | null;
+  name: string;
+  frequency_type: "daily" | "weekly";
+  frequency_count: number;
+  color: string | null;
+  sort_order: number;
+  created_at: string;
+}
+
+export interface HabitCompletion {
+  id: string;
+  habit_id: string;
+  user_id: string;
+  completed_date: string;
+  created_at: string;
+}
+
 export type SortOption = "deadline" | "priority" | "created_at";
 
 export interface CategoryFilter {

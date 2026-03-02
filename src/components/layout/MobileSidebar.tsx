@@ -18,6 +18,8 @@ interface MobileSidebarProps {
   onCalendarToggle?: () => void;
   statsActive?: boolean;
   onStatsToggle?: () => void;
+  habitsMode?: boolean;
+  onHabitsToggle?: () => void;
 }
 
 export function MobileSidebar({
@@ -31,6 +33,8 @@ export function MobileSidebar({
   onCalendarToggle,
   statsActive,
   onStatsToggle,
+  habitsMode,
+  onHabitsToggle,
 }: MobileSidebarProps) {
   const { t } = useLanguage();
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
@@ -92,6 +96,11 @@ export function MobileSidebar({
                 statsActive={statsActive}
                 onStatsToggle={() => {
                   onStatsToggle?.();
+                  onClose();
+                }}
+                habitsMode={habitsMode}
+                onHabitsToggle={() => {
+                  onHabitsToggle?.();
                   onClose();
                 }}
               />

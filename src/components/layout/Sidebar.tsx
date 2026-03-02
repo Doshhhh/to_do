@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ListTodo, ChevronDown, Calendar, BarChart3 } from "lucide-react";
+import { ListTodo, ChevronDown, Calendar, BarChart3, Repeat, CheckSquare } from "lucide-react";
 import { CategoryIcon } from "@/components/ui/CategoryIcon";
 import type { Category, CategoryFilter } from "@/lib/types";
 import { useTheme } from "@/components/providers/ThemeProvider";
@@ -21,6 +21,8 @@ interface SidebarProps {
   onCalendarToggle?: () => void;
   statsActive?: boolean;
   onStatsToggle?: () => void;
+  habitsMode?: boolean;
+  onHabitsToggle?: () => void;
 }
 
 export function Sidebar({
@@ -34,6 +36,8 @@ export function Sidebar({
   onCalendarToggle,
   statsActive,
   onStatsToggle,
+  habitsMode,
+  onHabitsToggle,
 }: SidebarProps) {
   const { isDark } = useTheme();
   const { t } = useLanguage();
@@ -219,12 +223,29 @@ export function Sidebar({
         })}
       </nav>
 
-      {/* Stats & Calendar buttons */}
-      {(onStatsToggle || onCalendarToggle) && (
+      {/* Habits, Stats & Calendar buttons */}
+      {(onHabitsToggle || onStatsToggle || onCalendarToggle) && (
         <div
           className="p-3 border-t space-y-1"
           style={{ borderColor: "var(--separator)" }}
         >
+          {onHabitsToggle && (
+            <button
+              onClick={onHabitsToggle}
+              className={cn(
+                "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium cursor-pointer",
+                habitsMode
+                  ? "bg-[var(--accent)]/10"
+                  : "hover:bg-[var(--separator)]"
+              )}
+              style={{
+                color: habitsMode ? "var(--accent)" : "var(--text-primary)",
+              }}
+            >
+              {habitsMode ? <CheckSquare size={18} /> : <Repeat size={18} />}
+              <span>{habitsMode ? t("sidebar.tasks") : t("sidebar.habits")}</span>
+            </button>
+          )}
           {onStatsToggle && (
             <button
               onClick={onStatsToggle}
@@ -242,7 +263,7 @@ export function Sidebar({
               <span>{t("sidebar.stats")}</span>
             </button>
           )}
-          {onCalendarToggle && (
+          {onCalendarToggle && !habitsMode && (
             <button
               onClick={onCalendarToggle}
               className={cn(
