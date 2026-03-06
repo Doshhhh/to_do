@@ -47,25 +47,27 @@ export function HabitsView({
       <div className="max-w-5xl mx-auto">
         {/* Tabs */}
         <div
-          className="flex gap-1 p-1 rounded-lg mb-4 w-fit"
+          className="flex gap-1 p-1 rounded-xl mb-5 w-fit"
           style={{ backgroundColor: "var(--separator)" }}
         >
           <button
             onClick={() => setTab("active")}
-            className="px-4 py-1.5 rounded-md text-sm font-medium transition-colors cursor-pointer"
+            className="px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-150 cursor-pointer"
             style={{
               backgroundColor: tab === "active" ? "var(--bg-card)" : "transparent",
               color: tab === "active" ? "var(--text-primary)" : "var(--text-secondary)",
+              boxShadow: tab === "active" ? "0 1px 3px rgba(0,0,0,0.08)" : "none",
             }}
           >
             {t("habits.tabActive")} {activeHabits.length > 0 && <span className="opacity-50">{activeHabits.length}</span>}
           </button>
           <button
             onClick={() => setTab("done")}
-            className="px-4 py-1.5 rounded-md text-sm font-medium transition-colors cursor-pointer"
+            className="px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-150 cursor-pointer"
             style={{
               backgroundColor: tab === "done" ? "var(--bg-card)" : "transparent",
               color: tab === "done" ? "var(--text-primary)" : "var(--text-secondary)",
+              boxShadow: tab === "done" ? "0 1px 3px rgba(0,0,0,0.08)" : "none",
             }}
           >
             {t("habits.tabDone")} {doneHabits.length > 0 && <span className="opacity-50">{doneHabits.length}</span>}
@@ -85,7 +87,7 @@ export function HabitsView({
           </div>
         ) : (
           <AnimatePresence mode="popLayout">
-            <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-1.5">
+            <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
               {current.map((habit, i) => (
                 <HabitCard
                   key={habit.id}

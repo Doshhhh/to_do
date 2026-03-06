@@ -49,75 +49,107 @@ export function HabitCard({
   return (
     <>
       <motion.div
-        layout
-        initial={{ opacity: 0, scale: 0.9 }}
+        initial={{ opacity: 0, scale: 0.92 }}
         animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.9 }}
+        exit={{ opacity: 0, scale: 0.92 }}
         transition={{ duration: 0.15, ease: "easeOut" }}
         onClick={() => onToggle(habit.id)}
-        className="rounded-lg overflow-hidden relative group cursor-pointer aspect-square"
+        className="rounded-xl overflow-hidden relative group cursor-pointer aspect-square select-none
+          transition-[transform,box-shadow] duration-150 ease-out
+          hover:scale-[1.03] active:scale-[0.97]"
         style={{
           backgroundColor: done
-            ? "var(--success)"
+            ? "rgba(107,143,113,0.85)"
             : isDark
-            ? "rgba(255,255,255,0.05)"
-            : "rgba(255,255,255,0.5)",
+            ? "rgba(255,255,255,0.06)"
+            : "rgba(255,255,255,0.6)",
           backdropFilter: "blur(12px)",
           WebkitBackdropFilter: "blur(12px)",
-          border: `1px solid ${done ? "var(--success)" : isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)"}`,
+          border: `1px solid ${
+            done
+              ? "rgba(127,168,134,0.4)"
+              : isDark
+              ? "rgba(255,255,255,0.1)"
+              : "rgba(0,0,0,0.06)"
+          }`,
+          boxShadow: done
+            ? "inset 0 1px 0 rgba(255,255,255,0.15), 0 2px 8px rgba(107,143,113,0.2)"
+            : isDark
+            ? "inset 0 1px 0 rgba(255,255,255,0.06), 0 1px 4px rgba(0,0,0,0.2)"
+            : "inset 0 1px 0 rgba(255,255,255,0.8), 0 1px 4px rgba(0,0,0,0.04)",
         }}
       >
-        {/* Color stripe */}
+        {/* Category gradient accent */}
         <div
-          className="h-1.5 w-full"
+          className="h-1 w-full"
           style={{ backgroundColor: done ? "rgba(255,255,255,0.2)" : categoryColor }}
         />
+        <div
+          className="h-4 w-full"
+          style={{
+            background: done
+              ? "linear-gradient(to bottom, rgba(255,255,255,0.08), transparent)"
+              : `linear-gradient(to bottom, ${categoryColor}18, transparent)`,
+          }}
+        />
+
+        {/* Shimmer overlay for done state */}
+        {done && (
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              background: "linear-gradient(135deg, rgba(255,255,255,0.12) 0%, transparent 50%, rgba(255,255,255,0.05) 100%)",
+            }}
+          />
+        )}
 
         {/* Delete button (only on active cards) */}
         {!done && (
           <button
             onClick={(e) => { e.stopPropagation(); setConfirmOpen(true); }}
-            className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded-lg cursor-pointer z-10"
+            className="absolute top-2.5 right-2.5 opacity-0 group-hover:opacity-100
+              transition-opacity duration-150 p-1.5 rounded-lg cursor-pointer z-10"
             style={{
               color: "var(--text-secondary)",
-              backgroundColor: "var(--separator)",
+              backgroundColor: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.05)",
             }}
           >
-            <Trash2 size={14} />
+            <Trash2 size={13} />
           </button>
         )}
 
         {/* Undo icon on done cards */}
         {done && (
-          <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity p-1">
-            <Undo2 size={14} style={{ color: "rgba(255,255,255,0.7)" }} />
+          <div className="absolute top-2.5 right-2.5 opacity-30 group-hover:opacity-100
+            transition-opacity duration-150 p-1.5">
+            <Undo2 size={14} style={{ color: "#fff" }} />
           </div>
         )}
 
-        <div className="p-3">
+        <div className="px-3 pb-3 flex flex-col justify-between h-[calc(100%-20px)]">
           {/* Habit name */}
           <h3
-            className="text-sm font-semibold pr-6 mb-3"
+            className="text-sm font-semibold pr-5 line-clamp-2 leading-snug"
             style={{ color: done ? "#fff" : "var(--text-primary)" }}
           >
             {habit.name}
           </h3>
 
-          {/* Stats row */}
+          {/* Stats */}
           <div>
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-1">
               {streak > 0 ? (
                 <span
-                  className="text-xs font-medium"
-                  style={{ color: done ? "rgba(255,255,255,0.85)" : "var(--success)" }}
+                  className="text-[11px] font-medium truncate"
+                  style={{ color: done ? "rgba(255,255,255,0.9)" : "var(--success)" }}
                 >
-                  {streak} {t("habits.streak")}
+                  🔥 {streak} {t("habits.streak")}
                 </span>
               ) : <span />}
 
               <span
-                className="text-xs"
-                style={{ color: done ? "rgba(255,255,255,0.7)" : "var(--text-secondary)" }}
+                className="text-[11px] shrink-0"
+                style={{ color: done ? "rgba(255,255,255,0.65)" : "var(--text-secondary)" }}
               >
                 {habit.frequency_type === "daily" ? (
                   t("habits.daily")
@@ -129,11 +161,13 @@ export function HabitCard({
               </span>
             </div>
 
-            {/* Weekly progress bar for weekly habits */}
+            {/* Weekly progress bar */}
             {habit.frequency_type === "weekly" && (
               <div
-                className="mt-2 h-1.5 rounded-full overflow-hidden"
-                style={{ backgroundColor: done ? "rgba(255,255,255,0.2)" : "var(--separator)" }}
+                className="mt-1.5 h-1 rounded-full overflow-hidden"
+                style={{
+                  backgroundColor: done ? "rgba(255,255,255,0.15)" : isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)",
+                }}
               >
                 <motion.div
                   initial={{ width: 0 }}
