@@ -108,13 +108,12 @@ export function HabitCard({
                   exit={{ scale: 0 }}
                   transition={{
                     type: "spring",
-                    stiffness: 500,
-                    damping: 15,
+                    stiffness: 800,
+                    damping: 20,
                   }}
-                  className="flex items-center gap-1.5"
+                  className="flex items-center"
                 >
-                  <Check size={16} strokeWidth={3} />
-                  {t("habits.completedToday")}
+                  <Check size={18} strokeWidth={3} />
                 </motion.span>
               ) : (
                 <motion.span
@@ -122,6 +121,7 @@ export function HabitCard({
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
                   exit={{ scale: 0 }}
+                  transition={{ duration: 0.1 }}
                 >
                   {t("habits.markDone")}
                 </motion.span>
