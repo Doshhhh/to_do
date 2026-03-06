@@ -55,7 +55,7 @@ export function HabitCard({
         exit={{ opacity: 0, scale: 0.9 }}
         transition={{ duration: 0.15, ease: "easeOut" }}
         onClick={() => onToggle(habit.id)}
-        className="rounded-xl overflow-hidden shadow-sm relative group aspect-square cursor-pointer"
+        className="rounded-xl overflow-hidden shadow-sm relative group cursor-pointer"
         style={{
           backgroundColor: done ? "var(--success)" : "var(--bg-card)",
           border: `1px solid ${done ? "var(--success)" : "var(--separator)"}`,
@@ -88,17 +88,17 @@ export function HabitCard({
           </div>
         )}
 
-        <div className="p-4 flex flex-col justify-between h-[calc(100%-6px)]">
+        <div className="p-3">
           {/* Habit name */}
           <h3
-            className="text-sm font-semibold pr-6"
+            className="text-sm font-semibold pr-6 mb-3"
             style={{ color: done ? "#fff" : "var(--text-primary)" }}
           >
             {habit.name}
           </h3>
 
+          {/* Stats row */}
           <div>
-            {/* Stats row */}
             <div className="flex items-center justify-between">
               {streak > 0 ? (
                 <span
