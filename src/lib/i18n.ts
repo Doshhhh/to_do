@@ -149,6 +149,10 @@ export const translations = {
   "habits.completionByDay": { ru: "Выполнение по дням", en: "Completion by day" },
   "habits.individualStats": { ru: "По привычкам", en: "By habit" },
   "habits.days": { ru: "дн.", en: "days" },
+  "habits.tabActive": { ru: "Активные", en: "Active" },
+  "habits.tabDone": { ru: "Выполнено", en: "Done" },
+  "habits.allDone": { ru: "Все привычки выполнены!", en: "All habits done!" },
+  "habits.noneDone": { ru: "Пока ничего не выполнено", en: "Nothing done yet" },
 
   // Statistics
   "sidebar.stats": { ru: "Статистика", en: "Statistics" },

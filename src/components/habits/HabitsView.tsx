@@ -1,11 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence } from "framer-motion";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { HabitCard } from "./HabitCard";
 import { HabitForm } from "./HabitForm";
 import { FloatingActionButton } from "@/components/ui/FloatingActionButton";
+import { isCompletedOnDate } from "@/hooks/useHabits";
 import type { Habit, HabitCompletion, Category, CategoryFilter } from "@/lib/types";
 
 interface HabitsViewProps {
@@ -35,35 +36,57 @@ export function HabitsView({
 }: HabitsViewProps) {
   const { t } = useLanguage();
   const [formOpen, setFormOpen] = useState(false);
+  const [tab, setTab] = useState<"active" | "done">("active");
+
+  const activeHabits = habits.filter((h) => !isCompletedOnDate(h.id, completions));
+  const doneHabits = habits.filter((h) => isCompletedOnDate(h.id, completions));
+  const current = tab === "active" ? activeHabits : doneHabits;
 
   return (
     <div className="flex-1 overflow-y-auto p-4 md:p-6">
       <div className="max-w-5xl mx-auto">
-        <AnimatePresence mode="wait">
-          {habits.length === 0 ? (
-            <motion.div
-              key="empty"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="flex items-center justify-center py-20"
+        {/* Tabs */}
+        <div
+          className="flex gap-1 p-1 rounded-lg mb-4 w-fit"
+          style={{ backgroundColor: "var(--separator)" }}
+        >
+          <button
+            onClick={() => setTab("active")}
+            className="px-4 py-1.5 rounded-md text-sm font-medium transition-colors cursor-pointer"
+            style={{
+              backgroundColor: tab === "active" ? "var(--bg-card)" : "transparent",
+              color: tab === "active" ? "var(--text-primary)" : "var(--text-secondary)",
+            }}
+          >
+            {t("habits.tabActive")} {activeHabits.length > 0 && <span className="opacity-50">{activeHabits.length}</span>}
+          </button>
+          <button
+            onClick={() => setTab("done")}
+            className="px-4 py-1.5 rounded-md text-sm font-medium transition-colors cursor-pointer"
+            style={{
+              backgroundColor: tab === "done" ? "var(--bg-card)" : "transparent",
+              color: tab === "done" ? "var(--text-primary)" : "var(--text-secondary)",
+            }}
+          >
+            {t("habits.tabDone")} {doneHabits.length > 0 && <span className="opacity-50">{doneHabits.length}</span>}
+          </button>
+        </div>
+
+        {current.length === 0 ? (
+          <div className="flex items-center justify-center py-20">
+            <p
+              className="text-sm"
+              style={{ color: "var(--text-secondary)" }}
             >
-              <p
-                className="text-sm"
-                style={{ color: "var(--text-secondary)" }}
-              >
-                {t("habits.noHabits")}
-              </p>
-            </motion.div>
-          ) : (
-            <motion.div
-              key="grid"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4"
-            >
-              {habits.map((habit, i) => (
+              {tab === "active"
+                ? (habits.length === 0 ? t("habits.noHabits") : t("habits.allDone"))
+                : t("habits.noneDone")}
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
+            <AnimatePresence mode="popLayout">
+              {current.map((habit, i) => (
                 <HabitCard
                   key={habit.id}
                   habit={habit}
@@ -72,11 +95,12 @@ export function HabitsView({
                   onToggle={onToggle}
                   onDelete={onDelete}
                   index={i}
+                  done={tab === "done"}
                 />
               ))}
-            </motion.div>
-          )}
-        </AnimatePresence>
+            </AnimatePresence>
+          </div>
+        )}
       </div>
 
       <FloatingActionButton onClick={() => setFormOpen(true)} />
