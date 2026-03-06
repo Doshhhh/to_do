@@ -55,10 +55,16 @@ export function HabitCard({
         exit={{ opacity: 0, scale: 0.9 }}
         transition={{ duration: 0.15, ease: "easeOut" }}
         onClick={() => onToggle(habit.id)}
-        className="rounded-xl overflow-hidden shadow-sm relative group cursor-pointer"
+        className="rounded-lg overflow-hidden relative group cursor-pointer aspect-square"
         style={{
-          backgroundColor: done ? "var(--success)" : "var(--bg-card)",
-          border: `1px solid ${done ? "var(--success)" : "var(--separator)"}`,
+          backgroundColor: done
+            ? "var(--success)"
+            : isDark
+            ? "rgba(255,255,255,0.05)"
+            : "rgba(255,255,255,0.5)",
+          backdropFilter: "blur(12px)",
+          WebkitBackdropFilter: "blur(12px)",
+          border: `1px solid ${done ? "var(--success)" : isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)"}`,
         }}
       >
         {/* Color stripe */}

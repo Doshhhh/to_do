@@ -85,7 +85,7 @@ export function HabitsView({
           </div>
         ) : (
           <AnimatePresence mode="popLayout">
-            <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+            <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-1.5">
               {current.map((habit, i) => (
                 <HabitCard
                   key={habit.id}
