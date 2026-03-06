@@ -108,18 +108,15 @@ export function useHabits() {
   };
 
   const toggleCompletion = async (habitId: string, date?: string) => {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return;
-
     const targetDate = date || new Date().toISOString().slice(0, 10);
     const existing = completions.find(
       (c) => c.habit_id === habitId && c.completed_date === targetDate
     );
 
     if (existing) {
-      // Remove completion
+      // Optimistic: remove immediately
+      setCompletions((prev) => prev.filter((c) => c.id !== existing.id));
+
       const { error } = await supabase
         .from("habit_completions")
         .delete()
@@ -127,12 +124,26 @@ export function useHabits() {
 
       if (error) {
         console.error("Error removing completion:", error);
-        return;
+        // Rollback
+        setCompletions((prev) => [existing, ...prev]);
       }
-
-      setCompletions((prev) => prev.filter((c) => c.id !== existing.id));
     } else {
-      // Add completion
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // Optimistic: add immediately with temp id
+      const tempId = `temp-${Date.now()}`;
+      const optimistic: HabitCompletion = {
+        id: tempId,
+        habit_id: habitId,
+        user_id: user.id,
+        completed_date: targetDate,
+        created_at: new Date().toISOString(),
+      };
+      setCompletions((prev) => [optimistic, ...prev]);
+
       const { data, error } = await supabase
         .from("habit_completions")
         .insert({
@@ -145,10 +156,14 @@ export function useHabits() {
 
       if (error) {
         console.error("Error adding completion:", error);
-        return;
+        // Rollback
+        setCompletions((prev) => prev.filter((c) => c.id !== tempId));
+      } else {
+        // Replace temp with real data
+        setCompletions((prev) =>
+          prev.map((c) => (c.id === tempId ? data : c))
+        );
       }
-
-      setCompletions((prev) => [data, ...prev]);
     }
   };
 
