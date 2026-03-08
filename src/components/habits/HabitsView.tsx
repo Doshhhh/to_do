@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { CheckCircle2, Sparkles, Target } from "lucide-react";
+import { Activity, CheckCircle2, Target } from "lucide-react";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { useTheme } from "@/components/providers/ThemeProvider";
 import { HabitCard } from "./HabitCard";
@@ -53,12 +53,12 @@ export function HabitsView({
   const summaryCards = [
     { key: "active", label: t("habits.tabActive"), value: activeHabits.length, icon: Target },
     { key: "done", label: t("habits.completedToday"), value: doneHabits.length, icon: CheckCircle2 },
-    { key: "rate", label: t("habits.weeklyRate"), value: `${completedRate}%`, icon: Sparkles },
+    { key: "rate", label: t("habits.weeklyRate"), value: `${completedRate}%`, icon: Activity },
   ];
 
   return (
     <div className="flex-1 overflow-y-auto p-4 md:p-6">
-      <div className="mx-auto max-w-6xl space-y-6">
+      <div className="mx-auto max-w-6xl space-y-4">
         <motion.section
           initial={{ opacity: 0, y: 18 }}
           animate={{ opacity: 1, y: 0 }}
@@ -66,33 +66,19 @@ export function HabitsView({
           className="relative overflow-hidden rounded-[28px] p-5 md:p-7"
           style={{
             background: isDark
-              ? "linear-gradient(135deg, rgba(232,148,58,0.16), rgba(127,168,134,0.14) 55%, rgba(255,255,255,0.04))"
-              : "linear-gradient(135deg, rgba(217,119,6,0.12), rgba(107,143,113,0.12) 55%, rgba(255,255,255,0.92))",
-            border: `1px solid ${isDark ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.7)"}`,
+              ? "linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02))"
+              : "linear-gradient(135deg, rgba(255,255,255,0.78), rgba(255,255,255,0.56))",
+            border: `1px solid ${isDark ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.72)"}`,
             boxShadow: isDark
               ? "0 22px 50px rgba(0,0,0,0.24)"
-              : "0 24px 50px rgba(187,146,83,0.14)",
+              : "0 18px 40px rgba(143,117,82,0.12)",
+            backdropFilter: "blur(20px)",
+            WebkitBackdropFilter: "blur(20px)",
           }}
         >
-          <div
-            className="absolute -top-16 right-0 h-40 w-40 rounded-full blur-3xl"
-            style={{ background: isDark ? "rgba(232,148,58,0.18)" : "rgba(217,119,6,0.18)" }}
-          />
-
-          <div className="relative flex flex-col gap-5">
+          <div className="relative flex flex-col gap-4">
             <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
               <div className="max-w-2xl">
-                <div
-                  className="mb-3 inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium"
-                  style={{
-                    backgroundColor: isDark ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.7)",
-                    color: "var(--text-secondary)",
-                  }}
-                >
-                  <Sparkles size={14} />
-                  {t("habits.title")}
-                </div>
-
                 <h2 className="text-2xl font-semibold tracking-tight md:text-3xl">
                   {tab === "active" ? t("habits.tabActive") : t("habits.tabDone")}
                 </h2>
@@ -106,19 +92,19 @@ export function HabitsView({
               </div>
 
               <div
-                className="flex gap-2 self-start rounded-2xl p-1.5"
+                className="flex gap-1.5 self-start rounded-[20px] p-1.5"
                 style={{
-                  backgroundColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(255,255,255,0.65)",
-                  border: `1px solid ${isDark ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.72)"}`,
+                  backgroundColor: isDark ? "rgba(255,255,255,0.05)" : "rgba(255,255,255,0.48)",
+                  border: `1px solid ${isDark ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.64)"}`,
                 }}
               >
                 <button
                   onClick={() => setTab("active")}
                   className="flex cursor-pointer items-center gap-2 rounded-2xl px-4 py-2 text-sm font-medium transition-all duration-150"
                   style={{
-                    backgroundColor: tab === "active" ? "var(--bg-card)" : "transparent",
+                    backgroundColor: tab === "active" ? "rgba(255,255,255,0.88)" : "transparent",
                     color: tab === "active" ? "var(--text-primary)" : "var(--text-secondary)",
-                    boxShadow: tab === "active" ? "0 10px 24px rgba(0,0,0,0.08)" : "none",
+                    boxShadow: tab === "active" ? "0 8px 20px rgba(0,0,0,0.08)" : "none",
                   }}
                 >
                   {t("habits.tabActive")}
@@ -129,9 +115,9 @@ export function HabitsView({
                   onClick={() => setTab("done")}
                   className="flex cursor-pointer items-center gap-2 rounded-2xl px-4 py-2 text-sm font-medium transition-all duration-150"
                   style={{
-                    backgroundColor: tab === "done" ? "var(--bg-card)" : "transparent",
+                    backgroundColor: tab === "done" ? "rgba(255,255,255,0.88)" : "transparent",
                     color: tab === "done" ? "var(--text-primary)" : "var(--text-secondary)",
-                    boxShadow: tab === "done" ? "0 10px 24px rgba(0,0,0,0.08)" : "none",
+                    boxShadow: tab === "done" ? "0 8px 20px rgba(0,0,0,0.08)" : "none",
                   }}
                 >
                   {t("habits.tabDone")}
@@ -140,17 +126,19 @@ export function HabitsView({
               </div>
             </div>
 
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
               {summaryCards.map((card) => {
                 const Icon = card.icon;
 
                 return (
                   <div
                     key={card.key}
-                    className="rounded-2xl p-4"
+                    className="rounded-[22px] p-4"
                     style={{
-                      backgroundColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(255,255,255,0.68)",
-                      border: `1px solid ${isDark ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.76)"}`,
+                      backgroundColor: isDark ? "rgba(255,255,255,0.05)" : "rgba(255,255,255,0.42)",
+                      border: `1px solid ${isDark ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.58)"}`,
+                      backdropFilter: "blur(18px)",
+                      WebkitBackdropFilter: "blur(18px)",
                     }}
                   >
                     <div className="flex items-center justify-between gap-3">
@@ -164,7 +152,7 @@ export function HabitsView({
                       <div
                         className="flex h-11 w-11 items-center justify-center rounded-2xl"
                         style={{
-                          backgroundColor: isDark ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.82)",
+                          backgroundColor: isDark ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.56)",
                           color: "var(--accent)",
                         }}
                       >
@@ -187,15 +175,6 @@ export function HabitsView({
             }}
           >
             <div className="max-w-sm">
-              <div
-                className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl"
-                style={{
-                  backgroundColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(217,119,6,0.08)",
-                  color: "var(--accent)",
-                }}
-              >
-                <Sparkles size={22} />
-              </div>
               <p className="text-lg font-semibold">
                 {tab === "active"
                   ? habits.length === 0
@@ -210,7 +189,7 @@ export function HabitsView({
           </div>
         ) : (
           <AnimatePresence mode="popLayout">
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {current.map((habit, i) => (
                 <HabitCard
                   key={habit.id}
