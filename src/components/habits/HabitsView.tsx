@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
@@ -220,3 +220,4 @@ export function HabitsView({
     </div>
   );
 }
+
