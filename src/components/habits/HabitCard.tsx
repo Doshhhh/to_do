@@ -7,7 +7,8 @@ import { useLanguage } from "@/components/providers/LanguageProvider";
 import { useTheme } from "@/components/providers/ThemeProvider";
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
-import { calculateStreak, weeklyProgress } from "@/hooks/useHabits";
+import { WEEKDAY_KEYS } from "@/lib/i18n";
+import { calculateStreak, periodProgress } from "@/hooks/useHabits";
 import type { Habit, HabitCompletion, Category } from "@/lib/types";
 
 interface HabitCardProps {
@@ -33,8 +34,8 @@ export function HabitCard({
   const { isDark } = useTheme();
   const [confirmOpen, setConfirmOpen] = useState(false);
 
-  const streak = calculateStreak(habit.id, completions, habit.frequency_type);
-  const weekDone = weeklyProgress(habit.id, completions);
+  const streak = calculateStreak(habit.id, completions, habit.frequency_type, habit);
+  const progress = periodProgress(habit, completions);
 
   const category = categories.find((c) => c.id === habit.category_id);
   const categoryColor = category
@@ -43,10 +44,49 @@ export function HabitCard({
       : category.color_light
     : "var(--accent)";
 
-  const weeklyProgressPercent =
-    habit.frequency_type === "weekly"
-      ? Math.min(100, (weekDone / habit.frequency_count) * 100)
-      : 0;
+  const progressPercent =
+    progress.target > 0 ? Math.min(100, (progress.done / progress.target) * 100) : 0;
+
+  const showProgressBar =
+    habit.frequency_type === "specific_days" ||
+    habit.frequency_type === "times_per_week" ||
+    habit.frequency_type === "times_per_month";
+
+  /** Human-readable frequency label */
+  function frequencyLabel(): string {
+    switch (habit.frequency_type) {
+      case "daily":
+        return t("habits.daily");
+      case "specific_days": {
+        const days = (habit.frequency_days || [])
+          .map((d) => t(WEEKDAY_KEYS[d]))
+          .join(", ");
+        return days;
+      }
+      case "times_per_week":
+        return `${progress.done}/${habit.frequency_count} ${t("habits.thisWeek")}`;
+      case "times_per_month":
+        return `${progress.done}/${habit.frequency_count} ${t("habits.thisMonth")}`;
+      case "every_n_days":
+        return `${t("habits.everyDays")} ${habit.frequency_count} ${t("habits.daysInterval")}`;
+      default:
+        return "";
+    }
+  }
+
+  /** Progress bar label */
+  function progressLabel(): string {
+    switch (habit.frequency_type) {
+      case "specific_days":
+        return t("habits.thisWeek");
+      case "times_per_week":
+        return t("habits.timesPerWeek");
+      case "times_per_month":
+        return t("habits.timesPerMonth");
+      default:
+        return "";
+    }
+  }
 
   return (
     <>
@@ -138,7 +178,7 @@ export function HabitCard({
                   color: "var(--text-secondary)",
                 }}
               >
-                {habit.frequency_type === "daily" ? t("habits.daily") : `${weekDone}/${habit.frequency_count} ${t("habits.thisWeek")}`}
+                {frequencyLabel()}
               </div>
 
               {streak > 0 ? (
@@ -157,11 +197,11 @@ export function HabitCard({
           </div>
 
           <div className="mt-5">
-            {habit.frequency_type === "weekly" ? (
+            {showProgressBar ? (
               <>
                 <div className="mb-2 flex items-center justify-between text-[11px] font-medium" style={{ color: "var(--text-secondary)" }}>
-                  <span>{t("habits.timesPerWeek")}</span>
-                  <span>{weekDone}/{habit.frequency_count}</span>
+                  <span>{progressLabel()}</span>
+                  <span>{progress.done}/{progress.target}</span>
                 </div>
                 <div
                   className="h-1.5 overflow-hidden rounded-full"
@@ -169,7 +209,7 @@ export function HabitCard({
                 >
                   <motion.div
                     initial={{ width: 0 }}
-                    animate={{ width: `${weeklyProgressPercent}%` }}
+                    animate={{ width: `${progressPercent}%` }}
                     transition={{ duration: 0.4, ease: "easeOut" }}
                     className="h-full rounded-full"
                     style={{ backgroundColor: categoryColor }}

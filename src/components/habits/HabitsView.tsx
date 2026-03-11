@@ -9,7 +9,7 @@ import { HabitCard } from "./HabitCard";
 import { HabitForm } from "./HabitForm";
 import { FloatingActionButton } from "@/components/ui/FloatingActionButton";
 import { isCompletedOnDate } from "@/hooks/useHabits";
-import type { Habit, HabitCompletion, Category, CategoryFilter } from "@/lib/types";
+import type { Habit, HabitCompletion, HabitFrequencyType, Category, CategoryFilter } from "@/lib/types";
 
 interface HabitsViewProps {
   habits: Habit[];
@@ -22,8 +22,9 @@ interface HabitsViewProps {
     name: string;
     category_id: string;
     subcategory_id: string | null;
-    frequency_type: "daily" | "weekly";
+    frequency_type: HabitFrequencyType;
     frequency_count: number;
+    frequency_days: number[] | null;
   }) => void;
 }
 

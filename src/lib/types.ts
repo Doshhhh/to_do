@@ -43,14 +43,22 @@ export interface Todo {
   updated_at: string;
 }
 
+export type HabitFrequencyType =
+  | "daily"
+  | "specific_days"
+  | "times_per_week"
+  | "times_per_month"
+  | "every_n_days";
+
 export interface Habit {
   id: string;
   user_id: string;
   category_id: string;
   subcategory_id: string | null;
   name: string;
-  frequency_type: "daily" | "weekly";
+  frequency_type: HabitFrequencyType;
   frequency_count: number;
+  frequency_days: number[] | null; // 0=Mon, 1=Tue, ..., 6=Sun — for specific_days
   color: string | null;
   sort_order: number;
   created_at: string;

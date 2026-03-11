@@ -15,7 +15,7 @@ import { useLanguage } from "@/components/providers/LanguageProvider";
 import { useTheme } from "@/components/providers/ThemeProvider";
 import { CategoryIcon } from "@/components/ui/CategoryIcon";
 import { CATEGORY_NAME_MAP } from "@/lib/i18n";
-import { calculateStreak } from "@/hooks/useHabits";
+import { calculateStreak, isHabitDueOnDate } from "@/hooks/useHabits";
 import type { Habit, HabitCompletion, Category } from "@/lib/types";
 
 type Period = "week" | "month";
@@ -35,6 +35,48 @@ const cardVariants = {
   }),
 };
 
+function dateStr(d: Date): string {
+  return d.toISOString().slice(0, 10);
+}
+
+/** Calculate how many completions are expected for a habit in a date range */
+function expectedCompletions(habit: Habit, start: Date, end: Date): number {
+  switch (habit.frequency_type) {
+    case "daily": {
+      const diff = Math.floor((end.getTime() - start.getTime()) / 86400000) + 1;
+      return diff;
+    }
+    case "specific_days": {
+      let count = 0;
+      const d = new Date(start);
+      while (d <= end) {
+        if (isHabitDueOnDate(habit, dateStr(d))) count++;
+        d.setDate(d.getDate() + 1);
+      }
+      return count;
+    }
+    case "times_per_week": {
+      const days = Math.floor((end.getTime() - start.getTime()) / 86400000) + 1;
+      return Math.max(1, Math.floor(days / 7)) * habit.frequency_count;
+    }
+    case "times_per_month": {
+      const days = Math.floor((end.getTime() - start.getTime()) / 86400000) + 1;
+      return Math.max(1, Math.floor(days / 30)) * habit.frequency_count;
+    }
+    case "every_n_days": {
+      let count = 0;
+      const d = new Date(start);
+      while (d <= end) {
+        if (isHabitDueOnDate(habit, dateStr(d))) count++;
+        d.setDate(d.getDate() + 1);
+      }
+      return Math.max(1, count);
+    }
+    default:
+      return 1;
+  }
+}
+
 export function HabitStats({
   habits,
   completions,
@@ -44,18 +86,16 @@ export function HabitStats({
   const { isDark } = useTheme();
   const [period, setPeriod] = useState<Period>("week");
 
-  // Best current streak across all habits
   const bestStreak = useMemo(() => {
     if (habits.length === 0) return 0;
     return Math.max(
       ...habits.map((h) =>
-        calculateStreak(h.id, completions, h.frequency_type)
+        calculateStreak(h.id, completions, h.frequency_type, h)
       ),
       0
     );
   }, [habits, completions]);
 
-  // Completion rate for the period
   const periodRange = useMemo(() => {
     const now = new Date();
     const end = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -67,23 +107,17 @@ export function HabitStats({
   const periodRate = useMemo(() => {
     if (habits.length === 0) return 0;
 
-    const days = period === "week" ? 7 : 30;
     let totalExpected = 0;
     let totalDone = 0;
 
     for (const habit of habits) {
-      if (habit.frequency_type === "daily") {
-        totalExpected += days;
-      } else {
-        totalExpected += Math.floor(days / 7) * habit.frequency_count;
-      }
+      totalExpected += expectedCompletions(habit, periodRange.start, periodRange.end);
 
       const habitDone = completions.filter((c) => {
         if (c.habit_id !== habit.id) return false;
-        const d = c.completed_date;
-        const startStr = periodRange.start.toISOString().slice(0, 10);
-        const endStr = periodRange.end.toISOString().slice(0, 10);
-        return d >= startStr && d <= endStr;
+        const startStr = dateStr(periodRange.start);
+        const endStr = dateStr(periodRange.end);
+        return c.completed_date >= startStr && c.completed_date <= endStr;
       }).length;
 
       totalDone += habitDone;
@@ -91,9 +125,8 @@ export function HabitStats({
 
     if (totalExpected === 0) return 0;
     return Math.round((totalDone / totalExpected) * 100);
-  }, [habits, completions, period, periodRange]);
+  }, [habits, completions, periodRange]);
 
-  // Chart: completion percentage per day
   const chartData = useMemo(() => {
     const days = period === "week" ? 7 : 30;
     const data: { label: string; rate: number }[] = [];
@@ -101,18 +134,18 @@ export function HabitStats({
     for (let i = 0; i < days; i++) {
       const d = new Date(periodRange.start);
       d.setDate(d.getDate() + i);
-      const dateStr = d.toISOString().slice(0, 10);
+      const ds = dateStr(d);
 
-      const dailyHabits = habits.filter((h) => h.frequency_type === "daily");
-      const totalDaily = dailyHabits.length;
-      const doneDaily = dailyHabits.filter((h) =>
+      // Count habits that are "due" on this day
+      const dueHabits = habits.filter((h) => isHabitDueOnDate(h, ds));
+      const totalDue = dueHabits.length;
+      const doneDue = dueHabits.filter((h) =>
         completions.some(
-          (c) => c.habit_id === h.id && c.completed_date === dateStr
+          (c) => c.habit_id === h.id && c.completed_date === ds
         )
       ).length;
 
-      const rate =
-        totalDaily > 0 ? Math.round((doneDaily / totalDaily) * 100) : 0;
+      const rate = totalDue > 0 ? Math.round((doneDue / totalDue) * 100) : 0;
       const label = `${d.getDate()}.${String(d.getMonth() + 1).padStart(2, "0")}`;
       data.push({ label, rate });
     }
@@ -120,10 +153,9 @@ export function HabitStats({
     return data;
   }, [habits, completions, period, periodRange]);
 
-  // Individual habit stats
   const habitStats = useMemo(() => {
     return habits.map((habit) => {
-      const streak = calculateStreak(habit.id, completions, habit.frequency_type);
+      const streak = calculateStreak(habit.id, completions, habit.frequency_type, habit);
       const cat = categories.find((c) => c.id === habit.category_id);
       const color = cat
         ? isDark
@@ -131,16 +163,12 @@ export function HabitStats({
           : cat.color_light
         : "var(--accent)";
 
-      const days = period === "week" ? 7 : 30;
-      const expected =
-        habit.frequency_type === "daily"
-          ? days
-          : Math.floor(days / 7) * habit.frequency_count;
+      const expected = expectedCompletions(habit, periodRange.start, periodRange.end);
 
       const done = completions.filter((c) => {
         if (c.habit_id !== habit.id) return false;
-        const startStr = periodRange.start.toISOString().slice(0, 10);
-        const endStr = periodRange.end.toISOString().slice(0, 10);
+        const startStr = dateStr(periodRange.start);
+        const endStr = dateStr(periodRange.end);
         return c.completed_date >= startStr && c.completed_date <= endStr;
       }).length;
 
@@ -148,7 +176,7 @@ export function HabitStats({
 
       return { habit, streak, color, done, expected, pct, catIcon: cat?.icon || "Circle" };
     });
-  }, [habits, completions, categories, isDark, period, periodRange]);
+  }, [habits, completions, categories, isDark, periodRange]);
 
   const accentColor =
     typeof document !== "undefined"
@@ -237,7 +265,7 @@ export function HabitStats({
           ))}
         </div>
 
-        {/* Line chart: daily completion rate */}
+        {/* Line chart */}
         <motion.div
           custom={3}
           variants={cardVariants}

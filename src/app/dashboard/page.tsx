@@ -141,13 +141,7 @@ export default function DashboardPage() {
   );
 
   const handleHabitAdd = useCallback(
-    async (data: {
-      name: string;
-      category_id: string;
-      subcategory_id: string | null;
-      frequency_type: "daily" | "weekly";
-      frequency_count: number;
-    }) => {
+    async (data: Parameters<typeof addHabit>[0]) => {
       await addHabit(data);
     },
     [addHabit]
