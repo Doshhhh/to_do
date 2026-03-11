@@ -102,9 +102,13 @@ export function HabitsView({
                   onClick={() => setTab("active")}
                   className="flex cursor-pointer items-center gap-2 rounded-2xl px-4 py-2 text-sm font-medium transition-all duration-150"
                   style={{
-                    backgroundColor: tab === "active" ? "rgba(255,255,255,0.88)" : "transparent",
+                    backgroundColor: tab === "active"
+                      ? isDark ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,0.88)"
+                      : "transparent",
                     color: tab === "active" ? "var(--text-primary)" : "var(--text-secondary)",
-                    boxShadow: tab === "active" ? "0 8px 20px rgba(0,0,0,0.08)" : "none",
+                    boxShadow: tab === "active"
+                      ? isDark ? "0 8px 20px rgba(0,0,0,0.2)" : "0 8px 20px rgba(0,0,0,0.08)"
+                      : "none",
                   }}
                 >
                   {t("habits.tabActive")}
@@ -115,9 +119,13 @@ export function HabitsView({
                   onClick={() => setTab("done")}
                   className="flex cursor-pointer items-center gap-2 rounded-2xl px-4 py-2 text-sm font-medium transition-all duration-150"
                   style={{
-                    backgroundColor: tab === "done" ? "rgba(255,255,255,0.88)" : "transparent",
+                    backgroundColor: tab === "done"
+                      ? isDark ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,0.88)"
+                      : "transparent",
                     color: tab === "done" ? "var(--text-primary)" : "var(--text-secondary)",
-                    boxShadow: tab === "done" ? "0 8px 20px rgba(0,0,0,0.08)" : "none",
+                    boxShadow: tab === "done"
+                      ? isDark ? "0 8px 20px rgba(0,0,0,0.2)" : "0 8px 20px rgba(0,0,0,0.08)"
+                      : "none",
                   }}
                 >
                   {t("habits.tabDone")}
